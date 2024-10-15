@@ -11,13 +11,16 @@ app.use(express.json());
 
 const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
-const REDIRECT_URI = process.env.REDIRECT_URI;
+const REDIRECT_URI = process.env.REDIRECT_URI; // Make sure this is correct in your .env file
 
 app.get('/login', (req, res) => {
     const scopes = 'user-read-private user-read-email';
-    res.redirect(`https://accounts.spotify.com/authorize?response_type=code&client_id=${CLIENT_ID}&scope=${encodeURIComponent(scopes)}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`);
-});
+    // Encode the redirect URI here:
+    const redirectUriEncoded = encodeURIComponent(REDIRECT_URI);
 
+    const authorizeURL = `https://accounts.spotify.com/authorize?response_type=code&client_id=${CLIENT_ID}&scope=${encodeURIComponent(scopes)}&redirect_uri=${redirectUriEncoded}`;
+    res.redirect(authorizeURL);
+});
 app.get('/callback', async (req, res) => {
     const code = req.query.code;
 

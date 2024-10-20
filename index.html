@@ -15,7 +15,7 @@
         }
 
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: auto;
             background: white;
             padding: 20px;
@@ -27,27 +27,30 @@
             color: #1DB954;
         }
 
-        #userData {
-            margin-top: 20px;
-        }
-
-        .error {
-            color: red;
-        }
-
-        button {
-            padding: 10px;
-            margin: 10px 0;
-            width: 100%;
-            box-sizing: border-box;
+        #loginButton {
             background-color: #1DB954;
             color: white;
             border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
             cursor: pointer;
+            font-size: 16px;
         }
 
-        button:hover {
-            background-color: #1ED760;
+        #loginButton:hover {
+            background-color: #1ed760;
+        }
+
+        #topTracks {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #topTracks li {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -55,52 +58,60 @@
 <body>
     <div class="container">
         <h1>Spotify User Data</h1>
-        <button onclick="initiateSpotifyLogin()">Login with Spotify</button>
+        <button id="loginButton">Login with Spotify</button>
         <div id="userData"></div>
+        <h2>Your Top 10 Tracks</h2>
+        <ul id="topTracks"></ul>
     </div>
 
     <script>
-        function initiateSpotifyLogin() {
+        const loginButton = document.getElementById('loginButton');
+        const userDataDiv = document.getElementById('userData');
+        const topTracksList = document.getElementById('topTracks');
+
+        loginButton.addEventListener('click', () => {
             window.location.href = 'http://localhost:3000/login';
-        }
+        });
 
-        async function fetchUserData(accessToken) {
-            try {
-                const response = await fetch('http://localhost:3000/user-data', {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-                if (!response.ok) {
-                    throw new Error('Failed to fetch user data');
+        // Check if we have an access token in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const accessToken = urlParams.get('access_token');
+
+        if (accessToken) {
+            // Hide login button
+            loginButton.style.display = 'none';
+
+            // Fetch user data
+            fetch('http://localhost:3000/user-data', {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
                 }
-                const userData = await response.json();
-                displayUserData(userData);
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('userData').innerHTML = `<p class="error">Error: ${error.message}</p>`;
-            }
-        }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    userDataDiv.innerHTML = `
+                    <h2>Welcome, ${data.display_name}!</h2>
+                    <p>Email: ${data.email}</p>
+                `;
+                })
+                .catch(error => console.error('Error:', error));
 
-        function displayUserData(userData) {
-            const userDataDiv = document.getElementById('userData');
-            userDataDiv.innerHTML = `
-                <h2>${userData.display_name}</h2>
-                <p>Email: ${userData.email}</p>
-                <p>Country: ${userData.country}</p>
-                <p>Spotify URI: ${userData.uri}</p>
-                <p>Followers: ${userData.followers.total}</p>
-                <img src="${userData.images[0]?.url || 'https://via.placeholder.com/150'}" alt="Profile Picture" style="width:150px;height:150px;border-radius:50%;">
-            `;
-        }
-
-        window.onload = function () {
-            const urlParams = new URLSearchParams(window.location.search);
-            const accessToken = urlParams.get('access_token');
-
-            if (accessToken) {
-                fetchUserData(accessToken);
-            }
+            // Fetch top tracks
+            fetch('http://localhost:3000/top-tracks', {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            })
+                .then(response => response.json())
+                .then(tracks => {
+                    topTracksList.innerHTML = '';
+                    tracks.forEach((track, index) => {
+                        const li = document.createElement('li');
+                        li.textContent = `${index + 1}. ${track.name} by ${track.artists[0].name}`;
+                        topTracksList.appendChild(li);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
         }
     </script>
 </body>

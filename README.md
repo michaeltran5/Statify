@@ -82,10 +82,6 @@ Before you begin, ensure you have met the following requirements:
 
 This project uses Firebase Firestore to store user data. When a user logs in, their top tracks are stored in the Firestore database under their Spotify user ID. This allows for data persistence and potential future features like trend analysis over time.
 
-## Contributing
-
-Contributions to Statify are welcome! Please feel free to submit a Pull Request.
-
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.

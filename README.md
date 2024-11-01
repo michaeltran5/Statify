@@ -59,6 +59,7 @@ Before you begin, ensure you have met the following requirements:
 5. Run the server:
    ```
    node server.js
+   npx http-server -p 5500
    ```
 
 ## Usage

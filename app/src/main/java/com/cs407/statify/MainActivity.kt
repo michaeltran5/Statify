@@ -18,8 +18,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        loginButton = findViewById(R.id.loginButton)
-        userDataTextView = findViewById(R.id.userDataTextView)
+
 
         loginButton.setOnClickListener {
             initiateSpotifyLogin()

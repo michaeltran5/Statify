@@ -1,80 +1,221 @@
+package com.cs407.statify
+
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.example.statify.R
 import kotlinx.coroutines.launch
-import org.json.JSONObject
+import android.util.Log
+import com.spotify.sdk.android.auth.AuthorizationClient
+import com.spotify.sdk.android.auth.AuthorizationResponse
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 class MainActivity : AppCompatActivity() {
-
+    private lateinit var userNameText: TextView
+    private lateinit var userEmailText: TextView
+    private lateinit var listeningTimeText: TextView
+    private lateinit var topTracksText: TextView
+    private lateinit var topArtistsText: TextView
+    private lateinit var topGenresText: TextView
     private lateinit var loginButton: Button
-    private lateinit var userDataTextView: TextView
+
+    private val db = Firebase.firestore
+
+    private val spotifyApi = Retrofit.Builder()
+        .baseUrl("https://api.spotify.com/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(SpotifyApi::class.java)
+
+    private var accessToken: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        initializeViews()
+        setupLoginButton()
+    }
 
+    private fun initializeViews() {
+        loginButton = findViewById(R.id.loginButton)
+        userNameText = findViewById(R.id.userNameText)
+        userEmailText = findViewById(R.id.userEmailText)
+        listeningTimeText = findViewById(R.id.listeningTimeText)
+        topTracksText = findViewById(R.id.topTracksText)
+        topArtistsText = findViewById(R.id.topArtistsText)
+        topGenresText = findViewById(R.id.topGenresText)
+    }
 
-
+    private fun setupLoginButton() {
         loginButton.setOnClickListener {
-            initiateSpotifyLogin()
+            startSpotifyAuth()
         }
+    }
 
-        // Check if we're returning from Spotify auth
-        val uri = intent.data
-        if (uri != null && uri.toString().startsWith(REDIRECT_URI)) {
-            val code = uri.getQueryParameter("code")
-            if (code != null) {
-                exchangeCodeForToken(code)
+    private fun startSpotifyAuth() {
+        try {
+            val intent = SpotifyAuth.getAuthIntent(this)
+            startActivityForResult(intent, SpotifyAuth.REQUEST_CODE)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error launching Spotify login", Toast.LENGTH_LONG).show()
+            Log.e("Statify", "Error launching auth", e)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == SpotifyAuth.REQUEST_CODE) {
+            val response = AuthorizationClient.getResponse(resultCode, data)
+            when (response.type) {
+                AuthorizationResponse.Type.TOKEN -> {
+                    accessToken = response.accessToken
+                    Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
+                    fetchSpotifyData()
+                }
+                AuthorizationResponse.Type.ERROR -> {
+                    Toast.makeText(this, "Login failed: ${response.error}", Toast.LENGTH_LONG).show()
+                    Log.e("Statify", "Auth error: ${response.error}")
+                }
+                else -> {
+                    Toast.makeText(this, "Login cancelled", Toast.LENGTH_SHORT).show()
+                    Log.d("Statify", "Auth cancelled")
+                }
             }
         }
     }
 
-    private fun initiateSpotifyLogin() {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(
-            "${AUTH_URL}?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}&scope=user-read-private%20user-read-email"
-        ))
-        startActivity(intent)
-    }
-
-    private fun exchangeCodeForToken(code: String) {
+    private fun fetchSpotifyData() {
         lifecycleScope.launch {
             try {
-                val token = NetworkUtils.exchangeCodeForToken(code)
-                fetchUserData(token)
+                val auth = "Bearer $accessToken"
+
+                // Get user profile
+                val userData = spotifyApi.getUserProfile(auth)
+
+                // Get top tracks
+                val topTracks = spotifyApi.getTopTracks(auth)
+
+                // Get top artists and calculate genres
+                val topArtists = spotifyApi.getTopArtists(auth)
+
+                // Calculate top genres
+                val genreCounts = mutableMapOf<String, Int>()
+                topArtists.items.forEach { artist ->
+                    artist.genres.forEach { genre ->
+                        genreCounts[genre] = (genreCounts[genre] ?: 0) + 1
+                    }
+                }
+
+                val topGenresList = genreCounts.entries
+                    .sortedByDescending { it.value }
+                    .take(5)
+                    .map { (genre, count) -> mapOf(
+                        "genre" to genre,
+                        "count" to count
+                    )}
+
+                // Store in Firebase
+                storeDataInFirebase(userData, topTracks, topArtists, topGenresList)
+
+                // Update UI
+                updateUI(userData, topTracks.items, topArtists.items, topGenresList)
+                calculateListeningTime(auth)
+
             } catch (e: Exception) {
-                userDataTextView.text = "Error: ${e.message}"
+                Log.e("Statify", "Error fetching data", e)
+                Toast.makeText(this@MainActivity, "Error fetching data", Toast.LENGTH_LONG).show()
             }
         }
     }
 
-    private fun fetchUserData(token: String) {
-        lifecycleScope.launch {
-            try {
-                val userData = NetworkUtils.fetchUserData(token)
-                displayUserData(userData)
-            } catch (e: Exception) {
-                userDataTextView.text = "Error: ${e.message}"
+    private fun storeDataInFirebase(
+        userData: UserData,
+        topTracks: TopTracksResponse,
+        topArtists: TopArtistsResponse,
+        topGenresList: List<Map<String, Any>>
+    ) {
+        val userDataMap = hashMapOf(
+            "userId" to userData.id,
+            "displayName" to userData.displayName,
+            "email" to userData.email,
+            "topTracks" to topTracks.items.map { track ->
+                hashMapOf(
+                    "id" to track.id,
+                    "name" to track.name,
+                    "artist" to track.artists.firstOrNull()?.name,
+                    "album" to track.album.name
+                )
+            },
+            "topArtists" to topArtists.items.take(10).map { artist ->
+                hashMapOf(
+                    "id" to artist.id,
+                    "name" to artist.name,
+                    "genres" to artist.genres
+                )
+            },
+            "topGenres" to topGenresList,
+            "lastUpdated" to com.google.firebase.Timestamp.now()
+        )
+
+        db.collection("users")
+            .document(userData.id)
+            .set(userDataMap)
+            .addOnSuccessListener {
+                Log.d("Statify", "Data stored in Firebase")
             }
+            .addOnFailureListener { e ->
+                Log.e("Statify", "Error storing data", e)
+            }
+    }
+
+    private suspend fun calculateListeningTime(auth: String) {
+        try {
+            var totalDurationMs = 0L
+            val response = spotifyApi.getRecentlyPlayed(auth)
+
+            response.items.forEach { playHistory ->
+                totalDurationMs += playHistory.track.durationMs
+            }
+
+            val totalMinutes = totalDurationMs / 60000
+            val hours = totalMinutes / 60
+            val minutes = totalMinutes % 60
+            listeningTimeText.text = getString(R.string.listening_time_format, hours, minutes)
+
+        } catch (e: Exception) {
+            Log.e("Statify", "Error calculating listening time", e)
         }
     }
 
-    private fun displayUserData(userData: UserData) {
-        userDataTextView.text = """
-            Name: ${userData.displayName}
-            Email: ${userData.email}
-            Country: ${userData.country}
-            Followers: ${userData.followers}
-        """.trimIndent()
-    }
+    private fun updateUI(
+        userData: UserData,
+        topTracks: List<Track>,
+        topArtists: List<Artist>,
+        topGenres: List<Map<String, Any>>
+    ) {
+        userNameText.text = getString(R.string.name_format, userData.displayName)
+        userEmailText.text = getString(R.string.email_format, userData.email)
 
-    companion object {
-        private const val CLIENT_ID = "your_client_id_here"
-        private const val REDIRECT_URI = "your_custom_scheme://callback"
-        private const val AUTH_URL = "https://accounts.spotify.com/authorize"
+        val tracksText = topTracks.mapIndexed { index, track ->
+            "${index + 1}. ${track.name} by ${track.artists.firstOrNull()?.name}"
+        }.joinToString("\n")
+        topTracksText.text = tracksText
+
+        val artistsText = topArtists.take(10).mapIndexed { index, artist ->
+            "${index + 1}. ${artist.name}"
+        }.joinToString("\n")
+        topArtistsText.text = artistsText
+
+        val genresText = topGenres.mapIndexed { index, genreMap ->
+            "${index + 1}. ${genreMap["genre"]} (${genreMap["count"]} artists)"
+        }.joinToString("\n")
+        topGenresText.text = genresText
     }
 }

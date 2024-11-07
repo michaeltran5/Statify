@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">Statify</string>
+
+    <string name="login_button_text">Login with Spotify</string>
+    <!-- Profile formatting strings -->
+    <string name="name_format">Name: %s</string>
+    <string name="email_format">Email: %s</string>
+    <string name="listening_time_format">Total listening time: %dh %dm</string>
+    <string name="track_format">%d. %s by %s</string>
+    <string name="artist_format">%d. %s</string>
+    <string name="genre_format">%d. %s (%d artists)</string>
+
+    <!-- Section headers -->
+    <string name="profile">Profile</string>
+    <string name="listening_time">Listening Time</string>
+    <string name="top_tracks">Top Tracks</string>
+    <string name="top_artists">Top Artists</string>
+    <string name="top_genres">Top Genres</string>
 </resources>

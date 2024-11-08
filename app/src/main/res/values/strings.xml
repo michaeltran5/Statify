@@ -10,6 +10,7 @@
     <string name="artist_format">%d. %s</string>
     <string name="genre_format">%d. %s (%d artists)</string>
 
+
     <!-- Section headers -->
     <string name="profile">Profile</string>
     <string name="listening_time">Listening Time</string>

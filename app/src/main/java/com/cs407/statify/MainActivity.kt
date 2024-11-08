@@ -1,20 +1,21 @@
 package com.cs407.statify
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
+import android.view.View
+import android.webkit.WebView
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
-import android.util.Log
-import com.spotify.sdk.android.auth.AuthorizationClient
-import com.spotify.sdk.android.auth.AuthorizationResponse
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.launch
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity() {
     private lateinit var userNameText: TextView
@@ -24,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var topArtistsText: TextView
     private lateinit var topGenresText: TextView
     private lateinit var loginButton: Button
+    private lateinit var webView: WebView
 
     private val db = Firebase.firestore
 
@@ -39,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initializeViews()
+        setupWebView()
         setupLoginButton()
     }
 
@@ -50,6 +53,18 @@ class MainActivity : AppCompatActivity() {
         topTracksText = findViewById(R.id.topTracksText)
         topArtistsText = findViewById(R.id.topArtistsText)
         topGenresText = findViewById(R.id.topGenresText)
+        webView = findViewById(R.id.webView)
+    }
+
+    private fun setupWebView() {
+        webView.settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            databaseEnabled = true
+            loadWithOverviewMode = true
+        }
+        WebView.setWebContentsDebuggingEnabled(true)
+        webView.visibility = View.GONE
     }
 
     private fun setupLoginButton() {
@@ -59,58 +74,40 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startSpotifyAuth() {
-        try {
-            SpotifyAuth.authenticate(this)
-        } catch (e: Exception) {
-            Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+        val client = SpotifyWebViewClient { token ->
+            accessToken = token
+            webView.visibility = View.GONE
+            Log.d("Statify", "Auth successful, token: $token")
+            fetchSpotifyData()
         }
+
+        webView.webViewClient = client
+        val authUrl = buildSpotifyAuthUrl()
+        webView.visibility = View.VISIBLE
+        webView.loadUrl(authUrl)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-
-        if (requestCode == SpotifyAuth.REQUEST_CODE) {
-            val response = AuthorizationClient.getResponse(resultCode, data)
-
-            when (response.type) {
-                AuthorizationResponse.Type.TOKEN -> {
-                    accessToken = response.accessToken
-                    Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
-                    fetchSpotifyData()
-                }
-                AuthorizationResponse.Type.ERROR -> {
-                    Toast.makeText(this, "Login failed: ${response.error}", Toast.LENGTH_LONG).show()
-                }
-                else -> {
-                    Toast.makeText(this, "Login cancelled", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
+    private fun buildSpotifyAuthUrl(): String {
+        return Uri.Builder()
+            .scheme("https")
+            .authority("accounts.spotify.com")
+            .appendPath("authorize")
+            .appendQueryParameter("client_id", "14674d2a9e9841f3b7a0b24a5aacd090")
+            .appendQueryParameter("response_type", "token")
+            .appendQueryParameter("redirect_uri", "statify://callback")
+            .appendQueryParameter("scope", "user-read-private user-read-email user-top-read user-read-recently-played")
+            .appendQueryParameter("show_dialog", "true")
+            .build()
+            .toString()
     }
 
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-
-
-        // Handle redirect from browser
-        intent?.data?.let { uri ->
-            if (uri.scheme == "statify") {
-                // Parse the access token from the URI fragment
-                val fragment = uri.fragment
-                if (fragment != null && fragment.contains("access_token=")) {
-                    val accessToken = fragment.substringAfter("access_token=")
-                        .substringBefore("&")
-
-                    this.accessToken = accessToken
-                    Log.d("Statify", "Token received from browser redirect")
-                    Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
-                    fetchSpotifyData()
-                }
-            }
+    override fun onBackPressed() {
+        if (webView.visibility == View.VISIBLE) {
+            webView.visibility = View.GONE
+        } else {
+            super.onBackPressed()
         }
     }
-
 
     private fun fetchSpotifyData() {
         lifecycleScope.launch {
@@ -150,6 +147,7 @@ class MainActivity : AppCompatActivity() {
                 calculateListeningTime(auth)
 
             } catch (e: Exception) {
+                Log.e("Statify", "Error fetching data", e)
                 Toast.makeText(this@MainActivity, "Error fetching data", Toast.LENGTH_LONG).show()
             }
         }
@@ -192,7 +190,7 @@ class MainActivity : AppCompatActivity() {
             }
             .addOnFailureListener { e ->
                 Log.e("Statify", "Error storing data", e)
-            } //test
+            }
     }
 
     private suspend fun calculateListeningTime(auth: String) {
@@ -220,8 +218,8 @@ class MainActivity : AppCompatActivity() {
         topArtists: List<Artist>,
         topGenres: List<Map<String, Any>>
     ) {
-        val displayName = userData.displayName.ifEmpty { "Spotify User" }
-        userNameText.text = getString(R.string.name_format, displayName)
+        userNameText.text = getString(R.string.name_format, userData.displayName)
+        userEmailText.text = getString(R.string.email_format, userData.email)
 
         val tracksText = topTracks.mapIndexed { index, track ->
             "${index + 1}. ${track.name} by ${track.artists.firstOrNull()?.name}"

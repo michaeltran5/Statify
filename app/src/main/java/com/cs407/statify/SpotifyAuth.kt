@@ -17,7 +17,6 @@ object SpotifyAuth {
     fun authenticate(activity: Activity) {
         Log.d(TAG, "Starting authentication")
         try {
-            // First attempt: Try using Chrome Custom Tabs or external browser
             val builder = AuthorizationRequest.Builder(
                 CLIENT_ID,
                 AuthorizationResponse.Type.TOKEN,
@@ -34,16 +33,16 @@ object SpotifyAuth {
 
             val request = builder.build()
 
-            // Try opening in browser first
-            val authUrl = request.toUri()
+            // Try using WebView first
             try {
+                AuthorizationClient.openLoginActivity(activity, REQUEST_CODE, request)
+                Log.d(TAG, "Opened auth in WebView")
+            } catch (e: Exception) {
+                // Fallback to browser if WebView fails
+                Log.d(TAG, "WebView failed, falling back to browser", e)
+                val authUrl = request.toUri()
                 val browserIntent = Intent(Intent.ACTION_VIEW, authUrl)
                 activity.startActivity(browserIntent)
-                Log.d(TAG, "Opened auth in browser")
-            } catch (e: Exception) {
-                // Fallback to WebView if browser fails
-                Log.d(TAG, "Browser failed, falling back to WebView")
-                AuthorizationClient.openLoginActivity(activity, REQUEST_CODE, request)
             }
 
         } catch (e: Exception) {
@@ -52,7 +51,6 @@ object SpotifyAuth {
         }
     }
 
-    // Helper function to convert AuthorizationRequest to Uri
     private fun AuthorizationRequest.toUri(): Uri {
         val uriBuilder = Uri.Builder()
             .scheme("https")
@@ -63,6 +61,10 @@ object SpotifyAuth {
             .appendQueryParameter("redirect_uri", REDIRECT_URI)
             .appendQueryParameter("scope", "user-read-private user-read-email user-top-read user-read-recently-played")
             .appendQueryParameter("show_dialog", "true")
+            .appendQueryParameter("auth_type", "webview")  // Try to force WebView
+            .appendQueryParameter("utm_source", "spotify-sdk")
+            .appendQueryParameter("utm_medium", "android-sdk")
+            .appendQueryParameter("utm_campaign", "android-sdk")
 
         return uriBuilder.build()
     }

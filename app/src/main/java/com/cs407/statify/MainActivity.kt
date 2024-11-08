@@ -201,7 +201,7 @@ class MainActivity : AppCompatActivity() {
             }
             .addOnFailureListener { e ->
                 Log.e("Statify", "Error storing data", e)
-            }
+            } //test
     }
 
     private suspend fun calculateListeningTime(auth: String) {

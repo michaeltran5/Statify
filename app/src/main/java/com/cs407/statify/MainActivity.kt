@@ -60,36 +60,65 @@ class MainActivity : AppCompatActivity() {
 
     private fun startSpotifyAuth() {
         try {
-            val intent = SpotifyAuth.getAuthIntent(this)
-            startActivityForResult(intent, SpotifyAuth.REQUEST_CODE)
+            Log.d("Statify", "Starting Spotify auth process")
+            SpotifyAuth.authenticate(this)
         } catch (e: Exception) {
-            Toast.makeText(this, "Error launching Spotify login", Toast.LENGTH_LONG).show()
             Log.e("Statify", "Error launching auth", e)
+            Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
+        Log.d("Statify", "onActivityResult called - requestCode: $requestCode, resultCode: $resultCode")
+
         if (requestCode == SpotifyAuth.REQUEST_CODE) {
             val response = AuthorizationClient.getResponse(resultCode, data)
+            Log.d("Statify", "Auth response type: ${response.type}")
+
             when (response.type) {
                 AuthorizationResponse.Type.TOKEN -> {
                     accessToken = response.accessToken
+                    Log.d("Statify", "Token received successfully")
                     Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
                     fetchSpotifyData()
                 }
                 AuthorizationResponse.Type.ERROR -> {
-                    Toast.makeText(this, "Login failed: ${response.error}", Toast.LENGTH_LONG).show()
                     Log.e("Statify", "Auth error: ${response.error}")
+                    Toast.makeText(this, "Login failed: ${response.error}", Toast.LENGTH_LONG).show()
                 }
                 else -> {
+                    Log.d("Statify", "Auth cancelled or unknown response")
                     Toast.makeText(this, "Login cancelled", Toast.LENGTH_SHORT).show()
-                    Log.d("Statify", "Auth cancelled")
                 }
             }
         }
     }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+
+        Log.d("Statify", "onNewIntent called")
+
+        // Handle redirect from browser
+        intent?.data?.let { uri ->
+            if (uri.scheme == "statify") {
+                // Parse the access token from the URI fragment
+                val fragment = uri.fragment
+                if (fragment != null && fragment.contains("access_token=")) {
+                    val accessToken = fragment.substringAfter("access_token=")
+                        .substringBefore("&")
+
+                    this.accessToken = accessToken
+                    Log.d("Statify", "Token received from browser redirect")
+                    Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
+                    fetchSpotifyData()
+                }
+            }
+        }
+    }
+
 
     private fun fetchSpotifyData() {
         lifecycleScope.launch {

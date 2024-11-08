@@ -60,10 +60,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun startSpotifyAuth() {
         try {
-            Log.d("Statify", "Starting Spotify auth process")
             SpotifyAuth.authenticate(this)
         } catch (e: Exception) {
-            Log.e("Statify", "Error launching auth", e)
             Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
@@ -71,25 +69,20 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        Log.d("Statify", "onActivityResult called - requestCode: $requestCode, resultCode: $resultCode")
 
         if (requestCode == SpotifyAuth.REQUEST_CODE) {
             val response = AuthorizationClient.getResponse(resultCode, data)
-            Log.d("Statify", "Auth response type: ${response.type}")
 
             when (response.type) {
                 AuthorizationResponse.Type.TOKEN -> {
                     accessToken = response.accessToken
-                    Log.d("Statify", "Token received successfully")
                     Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
                     fetchSpotifyData()
                 }
                 AuthorizationResponse.Type.ERROR -> {
-                    Log.e("Statify", "Auth error: ${response.error}")
                     Toast.makeText(this, "Login failed: ${response.error}", Toast.LENGTH_LONG).show()
                 }
                 else -> {
-                    Log.d("Statify", "Auth cancelled or unknown response")
                     Toast.makeText(this, "Login cancelled", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -99,7 +92,6 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
 
-        Log.d("Statify", "onNewIntent called")
 
         // Handle redirect from browser
         intent?.data?.let { uri ->
@@ -158,7 +150,6 @@ class MainActivity : AppCompatActivity() {
                 calculateListeningTime(auth)
 
             } catch (e: Exception) {
-                Log.e("Statify", "Error fetching data", e)
                 Toast.makeText(this@MainActivity, "Error fetching data", Toast.LENGTH_LONG).show()
             }
         }
@@ -229,8 +220,8 @@ class MainActivity : AppCompatActivity() {
         topArtists: List<Artist>,
         topGenres: List<Map<String, Any>>
     ) {
-        userNameText.text = getString(R.string.name_format, userData.displayName)
-        userEmailText.text = getString(R.string.email_format, userData.email)
+        val displayName = userData.displayName.ifEmpty { "Spotify User" }
+        userNameText.text = getString(R.string.name_format, displayName)
 
         val tracksText = topTracks.mapIndexed { index, track ->
             "${index + 1}. ${track.name} by ${track.artists.firstOrNull()?.name}"

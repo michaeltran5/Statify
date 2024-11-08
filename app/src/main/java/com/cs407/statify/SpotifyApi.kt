@@ -34,10 +34,14 @@ interface SpotifyApi {
 
 data class UserData(
     val id: String,
-    val displayName: String?,
+    val display_name: String?,  // Changed to match Spotify's API field name
     val email: String?,
-    val images: List<SpotifyImage>?
-)
+    val images: List<SpotifyImage>?,
+) {
+    // Add a computed property
+    val displayName: String
+        get() = display_name ?: "Spotify User"  // Fallback if null
+}
 
 data class TopTracksResponse(
     val items: List<Track>

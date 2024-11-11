@@ -13,7 +13,7 @@ interface SpotifyApi {
     @GET("v1/me/top/tracks")
     suspend fun getTopTracks(
         @Header("Authorization") auth: String,
-        @Query("limit") limit: Int = 10,
+        @Query("limit") limit: Int = 20,
         @Query("time_range") timeRange: String = "medium_term"
     ): TopTracksResponse
 

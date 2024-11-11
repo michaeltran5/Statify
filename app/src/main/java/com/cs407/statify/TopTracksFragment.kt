@@ -5,16 +5,22 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import android.widget.ImageView
+import android.widget.TextView
+import com.bumptech.glide.request.RequestOptions
 
 class TopTracksFragment : Fragment() {
-    private lateinit var topTracksDetailText: TextView
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: TopTracksAdapter
 
     private val spotifyApi = Retrofit.Builder()
         .baseUrl("https://api.spotify.com/")
@@ -32,7 +38,11 @@ class TopTracksFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        topTracksDetailText = view.findViewById(R.id.topTracksDetailText)
+
+        recyclerView = view.findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        adapter = TopTracksAdapter()
+        recyclerView.adapter = adapter
 
         // Get access token from SharedPreferences
         val sharedPreferences = requireActivity().getSharedPreferences("SPOTIFY", 0)
@@ -41,7 +51,7 @@ class TopTracksFragment : Fragment() {
         if (accessToken != null) {
             fetchTopTracks(accessToken)
         } else {
-            topTracksDetailText.text = "Please login first"
+            Toast.makeText(requireContext(), "Please login first", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -51,33 +61,66 @@ class TopTracksFragment : Fragment() {
                 val auth = "Bearer $accessToken"
                 Log.d("TopTracksFragment", "Fetching tracks with token: $accessToken")
 
-                val topTracks = spotifyApi.getTopTracks(auth)
+                // Set limit to 10 in the API call
+                val topTracks = spotifyApi.getTopTracks(auth, limit = 10)
                 Log.d("TopTracksFragment", "Retrieved ${topTracks.items.size} tracks")
 
-                val formattedTracks = formatTrackList(topTracks.items.take(10))
-                topTracksDetailText.text = formattedTracks
+                adapter.submitList(topTracks.items)
 
             } catch (e: Exception) {
                 Log.e("TopTracksFragment", "Error fetching top tracks", e)
-                topTracksDetailText.text = "Error loading tracks: ${e.message}"
                 Toast.makeText(requireContext(), "Error fetching top tracks", Toast.LENGTH_LONG).show()
             }
         }
     }
+}
 
-    private fun formatTrackList(tracks: List<Track>): String {
-        return if (tracks.isEmpty()) {
-            "No tracks found"
-        } else {
-            tracks.mapIndexed { index, track ->
-                val position = (index + 1).toString()
-                """
-                $position. ${track.name}
-                Artist: ${track.artists.joinToString(", ") { it.name }}
-                Album: ${track.album.name}
-                
-                """.trimIndent()
-            }.joinToString("\n")
+class TopTracksAdapter : RecyclerView.Adapter<TopTracksAdapter.TrackViewHolder>() {
+    private var tracks: List<Track> = emptyList()
+
+    fun submitList(newTracks: List<Track>) {
+        tracks = newTracks.take(10) // Ensure we only take top 10 even if more are returned
+        notifyDataSetChanged()
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrackViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_track, parent, false)
+        return TrackViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: TrackViewHolder, position: Int) {
+        holder.bind(tracks[position], position + 1)
+    }
+
+    override fun getItemCount(): Int = tracks.size
+
+    class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val positionText: TextView = itemView.findViewById(R.id.positionText)
+        private val trackImage: ImageView = itemView.findViewById(R.id.trackImage)
+        private val trackName: TextView = itemView.findViewById(R.id.trackName)
+        private val artistName: TextView = itemView.findViewById(R.id.artistName)
+        private val albumName: TextView = itemView.findViewById(R.id.albumName)
+
+        fun bind(track: Track, position: Int) {
+            positionText.text = position.toString()
+            trackName.text = track.name
+            artistName.text = track.artists.joinToString(", ") { it.name }
+            albumName.text = track.album.name
+
+            // Load image using Glide
+            track.getImage(SpotifyImageSizes.MEDIUM)?.let { imageUrl ->
+                Glide.with(itemView.context)
+                    .load(imageUrl)
+                    .apply(RequestOptions()
+                        .centerCrop()
+                        .placeholder(R.drawable.placeholder_album)
+                        .error(R.drawable.placeholder_album))
+                    .into(trackImage)
+            } ?: run {
+                // If no image URL is available, load placeholder
+                trackImage.setImageResource(R.drawable.placeholder_album)
+            }
         }
     }
 }

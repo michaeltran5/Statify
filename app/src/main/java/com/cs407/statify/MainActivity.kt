@@ -11,7 +11,11 @@ import androidx.navigation.fragment.findNavController
 
 class MainActivity : AppCompatActivity() {
     private lateinit var navController: NavController
-    private lateinit var webView: WebView // Keep WebView in MainActivity as it's shared
+    private lateinit var webView: WebView
+    private lateinit var homeButton: Button
+    private lateinit var topTracksButton: Button
+    private lateinit var friendsButton: Button
+    private lateinit var profileButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,22 +26,59 @@ class MainActivity : AppCompatActivity() {
         navController = navHostFragment.findNavController()
 
         webView = findViewById(R.id.webView)
+
+        // Initialize buttons
+        homeButton = findViewById(R.id.homeButton)
+        topTracksButton = findViewById(R.id.topTracksButton)
+        friendsButton = findViewById(R.id.friendsButton)
+        profileButton = findViewById(R.id.profileButton)
+
         setupNavigationButtons()
+        setupNavigationVisibility()
     }
 
     private fun setupNavigationButtons() {
-        findViewById<Button>(R.id.homeButton)?.setOnClickListener {
+        homeButton.setOnClickListener {
             navController.navigate(R.id.homeFragment)
         }
-        findViewById<Button>(R.id.topTracksButton)?.setOnClickListener {
+        topTracksButton.setOnClickListener {
             navController.navigate(R.id.topTracksFragment)
         }
-        findViewById<Button>(R.id.friendsButton)?.setOnClickListener {
+        friendsButton.setOnClickListener {
             navController.navigate(R.id.friendsFragment)
         }
-        findViewById<Button>(R.id.profileButton)?.setOnClickListener {
+        profileButton.setOnClickListener {
             navController.navigate(R.id.profileFragment)
         }
+    }
+
+    private fun setupNavigationVisibility() {
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.loadingFragment -> {
+                    hideNavigationButtons()
+                    supportActionBar?.hide()  // Hide the action bar
+                }
+                else -> {
+                    showNavigationButtons()
+                    supportActionBar?.show()  // Show the action bar
+                }
+            }
+        }
+    }
+
+    private fun hideNavigationButtons() {
+        homeButton.visibility = View.GONE
+        topTracksButton.visibility = View.GONE
+        friendsButton.visibility = View.GONE
+        profileButton.visibility = View.GONE
+    }
+
+    private fun showNavigationButtons() {
+        homeButton.visibility = View.VISIBLE
+        topTracksButton.visibility = View.VISIBLE
+        friendsButton.visibility = View.VISIBLE
+        profileButton.visibility = View.VISIBLE
     }
 
     @Deprecated("Deprecated in Java")

@@ -1,4 +1,5 @@
 package com.cs407.statify
+
 import android.util.Log
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -10,6 +11,7 @@ import kotlinx.coroutines.withContext
 
 class FriendManager(val username: String, private var friendList: ArrayList<String>) {
     private val db = Firebase.firestore
+
     /**
      * Search Firestore DB for users to add as friend,
      *
@@ -20,6 +22,7 @@ class FriendManager(val username: String, private var friendList: ArrayList<Stri
     private suspend fun searchForFriend(userToSearch: String) {
         TODO()
     }
+
     /**
      * Adds a friend to user's friend list
      *
@@ -30,6 +33,7 @@ class FriendManager(val username: String, private var friendList: ArrayList<Stri
     private suspend fun addFriend(userToAdd: String) : ArrayList<String> {
         TODO()
     }
+
     /**
      * Queries Firestore DB for a specific user's top tracks
      *
@@ -42,6 +46,7 @@ class FriendManager(val username: String, private var friendList: ArrayList<Stri
             .whereEqualTo("username", username)
             .get()
             .await()
+
         if (result.isEmpty) {
             Log.d("Error", "No user found with username: $username")
         } else {
@@ -52,8 +57,11 @@ class FriendManager(val username: String, private var friendList: ArrayList<Stri
                 }
             }
         }
+
+
         return topTracks
     }
+
     /**
      * Queries Firestore DB for names of a user's friends and sets friendList accordingly
      *
@@ -63,6 +71,7 @@ class FriendManager(val username: String, private var friendList: ArrayList<Stri
             .whereEqualTo("username", username)
             .get()
             .await()
+
         if (result.isEmpty) {
             Log.d("Error", "No user found with username: $username")
         } else {
@@ -72,6 +81,7 @@ class FriendManager(val username: String, private var friendList: ArrayList<Stri
             }
         }
     }
+
     /**
      * Logs friends and top tracks of the specified user
      *
@@ -87,4 +97,5 @@ class FriendManager(val username: String, private var friendList: ArrayList<Stri
             }
         }
     }
+
 }

@@ -3,6 +3,7 @@ package com.cs407.statify
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Query
+import kotlin.math.abs
 
 interface SpotifyApi {
     @GET("v1/me")
@@ -13,7 +14,7 @@ interface SpotifyApi {
     @GET("v1/me/top/tracks")
     suspend fun getTopTracks(
         @Header("Authorization") auth: String,
-        @Query("limit") limit: Int = 10,
+        @Query("limit") limit: Int = 20,
         @Query("time_range") timeRange: String = "medium_term"
     ): TopTracksResponse
 
@@ -32,15 +33,35 @@ interface SpotifyApi {
     ): RecentlyPlayedResponse
 }
 
+// Image size constants
+object SpotifyImageSizes {
+    const val SMALL = 64
+    const val MEDIUM = 300
+    const val LARGE = 640
+}
+
+// Extension function for getting best matching image URL
+fun List<SpotifyImage>?.getBestImageUrl(preferredSize: Int = SpotifyImageSizes.MEDIUM): String? {
+    if (this.isNullOrEmpty()) return null
+    return minByOrNull { image ->
+        abs((image.width ?: 0) - preferredSize)
+    }?.url ?: firstOrNull()?.url
+}
+
 data class UserData(
     val id: String,
-    val display_name: String?,  // Changed to match Spotify's API field name
+    val display_name: String?,
     val email: String?,
-    val images: List<SpotifyImage>?,
+    val images: List<SpotifyImage>?
 ) {
-    // Add a computed property
     val displayName: String
-        get() = display_name ?: "Spotify User"  // Fallback if null
+        get() = display_name ?: "Spotify User"
+
+    val profileImageUrl: String?
+        get() = images?.getBestImageUrl()
+
+    fun getProfileImage(size: Int = SpotifyImageSizes.MEDIUM): String? =
+        images?.getBestImageUrl(size)
 }
 
 data class TopTracksResponse(
@@ -53,7 +74,21 @@ data class Track(
     val artists: List<Artist>,
     val album: Album,
     val durationMs: Int
-)
+) {
+    val imageUrl: String?
+        get() = album.images?.getBestImageUrl()
+
+    fun getImage(size: Int = SpotifyImageSizes.MEDIUM): String? =
+        album.images?.getBestImageUrl(size)
+
+    // Helper property to get primary artist name
+    val artistName: String
+        get() = artists.firstOrNull()?.name ?: ""
+
+    // Helper property to get all artist names
+    val allArtistNames: String
+        get() = artists.joinToString(", ") { it.name }
+}
 
 data class TopArtistsResponse(
     val items: List<Artist>
@@ -64,13 +99,25 @@ data class Artist(
     val name: String,
     val genres: List<String>,
     val images: List<SpotifyImage>?
-)
+) {
+    val imageUrl: String?
+        get() = images?.getBestImageUrl()
+
+    fun getImage(size: Int = SpotifyImageSizes.MEDIUM): String? =
+        images?.getBestImageUrl(size)
+}
 
 data class Album(
     val id: String,
     val name: String,
     val images: List<SpotifyImage>?
-)
+) {
+    val imageUrl: String?
+        get() = images?.getBestImageUrl()
+
+    fun getImage(size: Int = SpotifyImageSizes.MEDIUM): String? =
+        images?.getBestImageUrl(size)
+}
 
 data class SpotifyImage(
     val url: String,
@@ -86,7 +133,14 @@ data class RecentlyPlayedResponse(
 data class PlayHistoryObject(
     val track: Track,
     val playedAt: String
-)
+) {
+    // Helper property to easily get the track's image
+    val imageUrl: String?
+        get() = track.imageUrl
+
+    fun getImage(size: Int = SpotifyImageSizes.MEDIUM): String? =
+        track.getImage(size)
+}
 
 data class Cursors(
     val after: String?,

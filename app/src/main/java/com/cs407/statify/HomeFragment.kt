@@ -1,103 +1,119 @@
 package com.cs407.statify
 
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.webkit.WebView
 import android.widget.Button
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.TextView
+import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavController
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.fragment.findNavController
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.*
-import kotlinx.coroutines.tasks.await
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import kotlin.math.log
 
-class MainActivity : AppCompatActivity() {
-    private lateinit var navController: NavController
+class HomeFragment : Fragment() {
+    private lateinit var userNameText: TextView
+    private lateinit var userEmailText: TextView
+    private lateinit var listeningTimeText: TextView
+    private lateinit var topTracksText: TextView
+    private lateinit var topArtistsText: TextView
+    private lateinit var topGenresText: TextView
+    private lateinit var loginButton: Button
     private lateinit var webView: WebView
-    private lateinit var homeButton: Button
-    private lateinit var topTracksButton: Button
-    private lateinit var friendsButton: Button
-    private lateinit var profileButton: Button
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+    private val db = Firebase.firestore
 
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        navController = navHostFragment.findNavController()
+    private val spotifyApi = Retrofit.Builder()
+        .baseUrl("https://api.spotify.com/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(SpotifyApi::class.java)
 
-        webView = findViewById(R.id.webView)
+    private var accessToken: String? = null
 
-        // Initialize buttons
-        homeButton = findViewById(R.id.homeButton)
-        topTracksButton = findViewById(R.id.topTracksButton)
-        friendsButton = findViewById(R.id.friendsButton)
-        profileButton = findViewById(R.id.profileButton)
-
-        setupNavigationButtons()
-        setupNavigationVisibility()
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
-    private fun setupNavigationButtons() {
-        homeButton.setOnClickListener {
-            navController.navigate(R.id.homeFragment)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initializeViews(view)
+        setupWebView()
+        setupLoginButton()
+    }
+
+    private fun initializeViews(view: View) {
+        loginButton = view.findViewById(R.id.loginButton)
+        userNameText = view.findViewById(R.id.userNameText)
+        userEmailText = view.findViewById(R.id.userEmailText)
+        listeningTimeText = view.findViewById(R.id.listeningTimeText)
+        topTracksText = view.findViewById(R.id.topTracksText)
+        topArtistsText = view.findViewById(R.id.topArtistsText)
+        topGenresText = view.findViewById(R.id.topGenresText)
+        webView = requireActivity().findViewById(R.id.webView) // WebView stays in MainActivity
+    }
+
+    private fun setupWebView() {
+        webView.settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            databaseEnabled = true
+            loadWithOverviewMode = true
         }
-        topTracksButton.setOnClickListener {
-            navController.navigate(R.id.topTracksFragment)
-        }
-        friendsButton.setOnClickListener {
-            navController.navigate(R.id.friendsFragment)
-        }
-        profileButton.setOnClickListener {
-            navController.navigate(R.id.profileFragment)
+        WebView.setWebContentsDebuggingEnabled(true)
+        webView.visibility = View.GONE
+    }
+
+    private fun setupLoginButton() {
+        loginButton.setOnClickListener {
+            startSpotifyAuth()
         }
     }
 
-    private fun setupNavigationVisibility() {
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            when (destination.id) {
-                R.id.loadingFragment -> {
-                    hideNavigationButtons()
-                    supportActionBar?.hide()  // Hide the action bar
-                }
-                else -> {
-                    showNavigationButtons()
-                    supportActionBar?.show()  // Show the action bar
-                }
-            }
-        }
-    }
-
-    private fun hideNavigationButtons() {
-        homeButton.visibility = View.GONE
-        topTracksButton.visibility = View.GONE
-        friendsButton.visibility = View.GONE
-        profileButton.visibility = View.GONE
-    }
-
-    private fun showNavigationButtons() {
-        homeButton.visibility = View.VISIBLE
-        topTracksButton.visibility = View.VISIBLE
-        friendsButton.visibility = View.VISIBLE
-        profileButton.visibility = View.VISIBLE
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        if (webView.visibility == View.VISIBLE) {
+    private fun startSpotifyAuth() {
+        val client = SpotifyWebViewClient { token ->
+            accessToken = token
             webView.visibility = View.GONE
-        } else {
-            @Suppress("DEPRECATION")
-            super.onBackPressed()
+            Log.d("Statify", "Auth successful, token: $token")
+
+            // Save token to SharedPreferences
+            requireActivity().getSharedPreferences("SPOTIFY", 0)
+                .edit()
+                .putString("access_token", token)
+                .apply()
+
+            fetchSpotifyData()
         }
+
+        webView.webViewClient = client
+        val authUrl = buildSpotifyAuthUrl()
+        webView.visibility = View.VISIBLE
+        webView.loadUrl(authUrl)
+    }
+
+    private fun buildSpotifyAuthUrl(): String {
+        return Uri.Builder()
+            .scheme("https")
+            .authority("accounts.spotify.com")
+            .appendPath("authorize")
+            .appendQueryParameter("client_id", "14674d2a9e9841f3b7a0b24a5aacd090")
+            .appendQueryParameter("response_type", "token")
+            .appendQueryParameter("redirect_uri", "statify://callback")
+            .appendQueryParameter("scope", "user-read-private user-read-email user-top-read user-read-recently-played")
+            .appendQueryParameter("show_dialog", "true")
+            .build()
+            .toString()
     }
 
     private fun fetchSpotifyData() {
@@ -139,7 +155,7 @@ class MainActivity : AppCompatActivity() {
 
             } catch (e: Exception) {
                 Log.e("Statify", "Error fetching data", e)
-                Toast.makeText(this@MainActivity, "Error fetching data", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Error fetching data", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -148,11 +164,8 @@ class MainActivity : AppCompatActivity() {
         userData: UserData,
         topTracks: TopTracksResponse,
         topArtists: TopArtistsResponse,
-        topGenresList: List<Map<String,Any>>
+        topGenresList: List<Map<String, Any>>
     ) {
-        // test friend list
-        val testFriendList: ArrayList<String> = arrayListOf("Friend1", "Friend2")
-
         val userDataMap = hashMapOf(
             "userId" to userData.id,
             "displayName" to userData.displayName,
@@ -173,15 +186,9 @@ class MainActivity : AppCompatActivity() {
                 )
             },
             "topGenres" to topGenresList,
-            "lastUpdated" to com.google.firebase.Timestamp.now(),
-            "username" to userData.displayName,
-            "friends" to testFriendList
+            "lastUpdated" to com.google.firebase.Timestamp.now()
         )
 
-        val fm = FriendManager(userData.displayName, ArrayList())
-        fm.displayFriends(fm.username)
-
-        Log.d("userMap", userDataMap.toString())
         db.collection("users")
             .document(userData.id)
             .set(userDataMap)

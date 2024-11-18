@@ -10,7 +10,6 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class FriendManager(val username: String, private var friendList: ArrayList<String>) {
-
     private val db = Firebase.firestore
 
     /**
@@ -58,6 +57,7 @@ class FriendManager(val username: String, private var friendList: ArrayList<Stri
                 }
             }
         }
+
 
         return topTracks
     }

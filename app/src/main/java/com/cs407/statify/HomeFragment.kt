@@ -17,6 +17,9 @@ import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import kotlinx.coroutines.*
+import kotlinx.coroutines.tasks.await
+import kotlin.math.log
 
 class HomeFragment : Fragment() {
     private lateinit var userNameText: TextView
@@ -166,6 +169,9 @@ class HomeFragment : Fragment() {
         topArtists: TopArtistsResponse,
         topGenresList: List<Map<String, Any>>
     ) {
+
+        val testFriendList: ArrayList<String> = arrayListOf("Friend1", "Friend2")
+
         val userDataMap = hashMapOf(
             "userId" to userData.id,
             "displayName" to userData.displayName,
@@ -186,8 +192,13 @@ class HomeFragment : Fragment() {
                 )
             },
             "topGenres" to topGenresList,
-            "lastUpdated" to com.google.firebase.Timestamp.now()
+            "lastUpdated" to com.google.firebase.Timestamp.now(),
+            "username" to userData.displayName,
+            "friends" to testFriendList
         )
+        val fm = FriendManager(userData.displayName, ArrayList())
+        fm.displayFriends(fm.username)
+        Log.d("userMap", userDataMap.toString())
 
         db.collection("users")
             .document(userData.id)

@@ -1,8 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.Statify" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    </style>
 
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    <!-- Main app theme -->
+    <style name="Theme.Statify" parent="Base.Theme.Statify" />
+
+    <!-- Separate splash theme -->
+    <style name="Theme.Statify.Splash" parent="Theme.Statify">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowDisablePreview">true</item>
     </style>
 </resources>

@@ -57,8 +57,6 @@ class FriendManager(val username: String, private var friendList: ArrayList<Stri
                 }
             }
         }
-
-
         return topTracks
     }
 

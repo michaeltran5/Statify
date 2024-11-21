@@ -206,7 +206,7 @@ class ProfileFragment : Fragment() {
             appendLine("Top Genres")
             appendLine("----------")
             topGenres.take(5).forEachIndexed { index, genre ->
-                appendLine("${index + 1}. ${genre["genre"]} (${genre["count"]} artists in genre)")
+                appendLine("${index + 1}. ${genre["genre"]} (${genre["count"]} tracks)")
             }
         }
     }

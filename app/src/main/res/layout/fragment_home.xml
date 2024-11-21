@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#000000">
 
-    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -24,58 +25,73 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:textSize="18sp" />
+                android:textSize="18sp"
+                android:textColor="#00FF00" />
 
             <TextView
                 android:id="@+id/userEmailText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp" />
+                android:layout_marginTop="8dp"
+                android:textColor="#00FF00" />
 
             <TextView
                 android:id="@+id/listeningTimeText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp" />
+                android:layout_marginTop="16dp"
+                android:textColor="#00FF00" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Top Tracks:"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:textColor="#00FF00"
+                android:textSize="30dp"
+                android:layout_gravity="center_horizontal" />
 
             <TextView
                 android:id="@+id/topTracksText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp" />
+                android:layout_marginTop="8dp"
+                android:textColor="#FFFFFF" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Top Artists:"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:textColor="#00FF00"
+                android:textSize="30dp"
+                android:layout_gravity="center_horizontal" />
 
             <TextView
                 android:id="@+id/topArtistsText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp" />
+                android:layout_marginTop="8dp"
+                android:textColor="#FFFFFF" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Top Genres:"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:textColor="#00FF00"
+                android:textSize="30dp"
+                android:layout_gravity="center_horizontal" />
 
             <TextView
                 android:id="@+id/topGenresText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp" />
+                android:layout_marginTop="8dp"
+                android:textColor="#FFFFFF" />
 
         </LinearLayout>
 

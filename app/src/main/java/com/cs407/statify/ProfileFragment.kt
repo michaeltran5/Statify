@@ -8,10 +8,11 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -19,6 +20,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 private const val TAG = "ProfileFragment"
 
@@ -35,6 +38,15 @@ class ProfileFragment : Fragment() {
     // Coroutine scope for async operations
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
+    private lateinit var profileImage: ImageView
+    private val retrofit = Retrofit.Builder()
+        .baseUrl("https://api.spotify.com/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    private val spotifyApi = retrofit.create(SpotifyApi::class.java)
+
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -50,6 +62,8 @@ class ProfileFragment : Fragment() {
         profileDetailsText = view.findViewById(R.id.profileDetailsText)
         logoutButton = view.findViewById(R.id.logoutButton)
         progressBar = view.findViewById(R.id.progressBar)
+        profileImage = view.findViewById(R.id.profileImage)
+
 
         setupLogoutButton()
         loadUserProfile()
@@ -114,10 +128,38 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    private fun fetchSpotifyProfile() {
+        coroutineScope.launch {
+            try {
+                val sharedPreferences = requireActivity().getSharedPreferences("SPOTIFY", 0)
+                val accessToken = sharedPreferences.getString("access_token", null)
+
+                if (accessToken != null) {
+                    withContext(Dispatchers.IO) {
+                        val userData = spotifyApi.getUserProfile("Bearer $accessToken")
+                        withContext(Dispatchers.Main) {
+                            // Update UI with the user data
+                            userData.profileImageUrl?.let { imageUrl ->
+                                Glide.with(requireContext())
+                                    .load(imageUrl)
+                                    .circleCrop()
+                                    .into(profileImage)
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching Spotify profile", e)
+            }
+        }
+    }
+
     private fun loadUserProfile() {
         val currentUser = auth.currentUser
         if (currentUser != null) {
             showLoading(true)
+
+            fetchSpotifyProfile()
 
             db.collection("users")
                 .document(currentUser.uid)
@@ -157,6 +199,7 @@ class ProfileFragment : Fragment() {
         val displayName = userData["displayName"] as? String ?: "Unknown"
         val email = userData["email"] as? String ?: "No email"
         val spotifyId = userData["spotifyId"] as? String ?: "No Spotify ID"
+
 
         val profileText = buildString {
             appendLine("Profile Information")

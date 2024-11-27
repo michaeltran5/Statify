@@ -1,7 +1,14 @@
 package com.cs407.statify
 
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +17,7 @@ import android.webkit.WebView
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.ktx.auth
@@ -21,6 +29,11 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import android.graphics.Paint
+import android.text.TextPaint
+import android.text.style.AbsoluteSizeSpan
+import android.text.style.TypefaceSpan
+
 
 private const val TAG = "HomeFragment"
 
@@ -311,20 +324,23 @@ class HomeFragment : Fragment() {
         userNameText.text = getString(R.string.name_format, userData.displayName)
         userEmailText.text = getString(R.string.email_format, userData.email)
 
-        val tracksText = topTracks.mapIndexed { index, track ->
-            "${index + 1}. ${track.name} by ${track.artists.firstOrNull()?.name}"
-        }.joinToString("\n")
+        val tracksText = topTracks.take(10).mapIndexed { index, track ->
+            val trackInfo = "${index + 1}  ${track.name} by ${track.artists.firstOrNull()?.name}"
+            getStyledText(index + 1, trackInfo)
+        }.joinToSpanned("\n")
         topTracksText.text = tracksText
 
         val artistsText = topArtists.take(10).mapIndexed { index, artist ->
-            "${index + 1}. ${artist.name}"
+            "${index + 1}  ${artist.name}"
         }.joinToString("\n")
         topArtistsText.text = artistsText
 
         val genresText = topGenres.mapIndexed { index, genreMap ->
-            "${index + 1}. ${genreMap["genre"]} (${genreMap["count"]} artists)"
-        }.joinToString("\n")
+            val genreInfo = "${index + 1}  ${genreMap["genre"]} (${genreMap["count"]} artists)"
+            getStyledText(index + 1, genreInfo)
+        }.joinToSpanned("\n")
         topGenresText.text = genresText
+
     }
 
     private fun updateUIFromFirestore(data: Map<String, Any>) {
@@ -332,22 +348,105 @@ class HomeFragment : Fragment() {
         userEmailText.text = getString(R.string.email_format, data["email"] as? String ?: "Unknown")
 
         @Suppress("UNCHECKED_CAST")
-        val tracks = (data["topTracks"] as? List<Map<String, Any>>)?.mapIndexed { index, track ->
-            "${index + 1}. ${track["name"]} by ${track["artist"]}"
-        }?.joinToString("\n")
-        topTracksText.text = tracks ?: "No tracks available"
-
-        @Suppress("UNCHECKED_CAST")
         val artists = (data["topArtists"] as? List<Map<String, Any>>)?.take(10)?.mapIndexed { index, artist ->
-            "${index + 1}. ${artist["name"]}"
+            "${index + 1}  ${artist["name"]}"
         }?.joinToString("\n")
         topArtistsText.text = artists ?: "No artists available"
 
         @Suppress("UNCHECKED_CAST")
-        val genres = (data["topGenres"] as? List<Map<String, Any>>)?.mapIndexed { index, genre ->
-            "${index + 1}. ${genre["genre"]} (${genre["count"]} artists)"
-        }?.joinToString("\n")
+        val tracks = (data["topTracks"] as? List<Map<String, Any>>)
+            ?.take(10)
+            ?.mapIndexed { index, track ->
+                val trackInfo = "${index + 1}  ${track["name"]} by ${track["artist"]}"
+                getStyledText(index + 1, trackInfo)
+            }?.joinToSpanned("\n")
+        topTracksText.text = tracks ?: "No tracks available"
+
+        val genres = (data["topGenres"] as? List<Map<String, Any>>)
+            ?.mapIndexed { index, genre ->
+                val genreInfo = "${index + 1}  ${genre["genre"]} (${genre["count"]} artists)"
+                getStyledText(index + 1, genreInfo)
+            }?.joinToSpanned("\n")
         topGenresText.text = genres ?: "No genres available"
+    }
+
+    private fun getStyledText(number: Int, fullText: String): SpannableString {
+        val spannable = SpannableString(fullText)
+        val numberString = "$number"
+        val startIndex = fullText.indexOf(numberString)
+        val endIndex = startIndex + numberString.length
+        val restOfLineStartIndex = endIndex
+
+        if (startIndex >= 0) {
+            spannable.setSpan(
+                ForegroundColorSpan(ContextCompat.getColor(requireContext(), R.color.spotify_green)),
+                startIndex,
+                endIndex,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+
+            spannable.setSpan(
+                AbsoluteSizeSpan(25, true),
+                startIndex,
+                endIndex,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+
+            spannable.setSpan(
+                StyleSpan(Typeface.BOLD),
+                startIndex,
+                endIndex,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+
+            val numberTypeface = Typeface.create("monospace", Typeface.BOLD)
+            spannable.setSpan(
+                CustomTypefaceSpan(numberTypeface),
+                startIndex,
+                endIndex,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+
+            spannable.setSpan(
+                AbsoluteSizeSpan(18, true),
+                restOfLineStartIndex,
+                spannable.length,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+        return spannable
+    }
+
+    class CustomTypefaceSpan(private val typeface: Typeface) : TypefaceSpan(null) {
+        override fun updateDrawState(ds: TextPaint) {
+            applyCustomTypeface(ds, typeface)
+        }
+
+        override fun updateMeasureState(paint: TextPaint) {
+            applyCustomTypeface(paint, typeface)
+        }
+
+        private fun applyCustomTypeface(paint: Paint, tf: Typeface) {
+            val oldTypeface = paint.typeface
+            val oldStyle = oldTypeface?.style ?: 0
+
+            val fake = oldStyle and tf.style.inv()
+            if (fake and Typeface.BOLD != 0) {
+                paint.isFakeBoldText = true
+            }
+
+            if (fake and Typeface.ITALIC != 0) {
+                paint.textSkewX = -0.25f
+            }
+
+            paint.typeface = tf
+        }
+    }
+
+    private fun List<Spanned>.joinToSpanned(separator: String): Spanned {
+        return this.reduce { acc, spanned ->
+            SpannableStringBuilder(acc).append(separator).append(spanned)
+        }
     }
 
     companion object {

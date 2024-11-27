@@ -58,7 +58,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:textColor="#FFFFFF" />
+                android:textColor="#FFFFFF"
+                android:fontFamily="sans-serif-condensed-medium" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -76,7 +77,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:textColor="#FFFFFF" />
+                android:textColor="#FFFFFF"
+                android:fontFamily="sans-serif-condensed-medium" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -94,7 +96,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:textColor="#FFFFFF" />
+                android:textColor="#FFFFFF"
+                android:fontFamily="sans-serif-condensed-medium" />
 
         </LinearLayout>
 

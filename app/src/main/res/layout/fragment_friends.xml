@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="@color/black">
 
-    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -15,6 +15,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -24,11 +25,32 @@
                 android:textSize="40sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/friendsListText"
+            <LinearLayout
+                android:id="@+id/searchContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp" />
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <Button
+                    android:id="@+id/searchButton"
+                    android:layout_width="0.5dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginVertical="5dp"
+                    android:layout_weight="1"
+                    android:drawableStart="@drawable/search_icon"
+                    android:textAlignment="center"/>
+
+                <EditText
+                    android:layout_width="149dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginVertical="10dp"
+                    android:layout_weight="3"
+                    android:background="@color/white"
+                    android:hint="Search for new friends"
+                    android:padding="10dp"
+                    android:textAlignment="center" />
+                </LinearLayout>
 
         </LinearLayout>
     </ScrollView>

@@ -115,7 +115,7 @@ class ProfileFragment : Fragment() {
                 Toast.makeText(requireContext(), "Logged out successfully", Toast.LENGTH_SHORT).show()
 
                 // Navigate to home
-                findNavController().navigate(R.id.homeFragment)
+                findNavController().navigate(R.id.loginFragment)
 
             } catch (e: Exception) {
                 Log.e(TAG, "Error during logout", e)

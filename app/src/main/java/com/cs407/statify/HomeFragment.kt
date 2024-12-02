@@ -126,7 +126,8 @@ class HomeFragment : Fragment() {
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching data", e)
             withContext(Dispatchers.Main) {
-                Toast.makeText(requireContext(), "Error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Error: ${e.localizedMessage}",
+                    Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -176,7 +177,8 @@ class HomeFragment : Fragment() {
             .set(userDataMap)
             .addOnFailureListener { e ->
                 Log.e(TAG, "Error storing data", e)
-                Toast.makeText(requireContext(), "Error saving data: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Error saving data: ${e.localizedMessage}",
+                    Toast.LENGTH_LONG).show()
             }
     }
 

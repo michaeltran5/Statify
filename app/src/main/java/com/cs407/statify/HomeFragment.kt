@@ -35,9 +35,6 @@ import androidx.viewpager2.widget.ViewPager2
 private const val TAG = "HomeFragment"
 
 class HomeFragment : Fragment() {
-    private lateinit var userNameText: TextView
-    private lateinit var userEmailText: TextView
-    private lateinit var listeningTimeText: TextView
     private lateinit var topTracksText: TextView
     private lateinit var viewPager: ViewPager2
     private lateinit var topGenresText: TextView
@@ -69,9 +66,6 @@ class HomeFragment : Fragment() {
     }
 
     private fun initializeViews(view: View) {
-        userNameText = view.findViewById(R.id.userNameText)
-        userEmailText = view.findViewById(R.id.userEmailText)
-        listeningTimeText = view.findViewById(R.id.listeningTimeText)
         topTracksText = view.findViewById(R.id.topTracksText)
         viewPager = view.findViewById(R.id.artistCarouselViewPager)
         topGenresText = view.findViewById(R.id.topGenresText)
@@ -192,10 +186,6 @@ class HomeFragment : Fragment() {
             val totalMinutes = totalDurationMs / 60000
             val hours = totalMinutes / 60
             val minutes = totalMinutes % 60
-
-            withContext(Dispatchers.Main) {
-                listeningTimeText.text = getString(R.string.listening_time_format, hours, minutes)
-            }
         } catch (e: Exception) {
             Log.e(TAG, "Error calculating listening time", e)
         }
@@ -228,9 +218,6 @@ class HomeFragment : Fragment() {
         topArtists: List<Artist>,
         topGenres: List<Map<String, Any>>
     ) {
-        userNameText.text = getString(R.string.name_format, userData.displayName)
-        userEmailText.text = getString(R.string.email_format, userData.email)
-
         setupArtistCarousel(topArtists)
 
         val tracksText = topTracks.take(10).mapIndexed { index, track ->
@@ -247,9 +234,6 @@ class HomeFragment : Fragment() {
     }
 
     private fun updateUIFromFirestore(data: Map<String, Any>) {
-        userNameText.text = getString(R.string.name_format, data["displayName"] as? String ?: "Unknown")
-        userEmailText.text = getString(R.string.email_format, data["email"] as? String ?: "Unknown")
-
         val topArtists = (data["topArtists"] as? List<Map<String, Any>>)
             ?.take(10)
             ?.map { artistData ->

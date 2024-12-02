@@ -15,28 +15,6 @@
             android:padding="16dp">
 
             <TextView
-                android:id="@+id/userNameText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:textSize="18sp"
-                android:textColor="@color/spotify_green" />
-
-            <TextView
-                android:id="@+id/userEmailText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textColor="@color/spotify_green" />
-
-            <TextView
-                android:id="@+id/listeningTimeText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:textColor="@color/spotify_green" />
-
-            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -59,7 +37,6 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:text="@string/top_tracks_header"
                 android:textStyle="bold"
                 android:textColor="@color/spotify_green"
@@ -73,7 +50,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:textColor="#FFFFFF"
-                android:fontFamily="sans-serif-condensed-medium" />
+                android:fontFamily="sans-serif-condensed-medium"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -92,7 +71,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:textColor="#FFFFFF"
-                android:fontFamily="sans-serif-condensed-medium" />
+                android:fontFamily="sans-serif-condensed-medium"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp" />
 
         </LinearLayout>
 

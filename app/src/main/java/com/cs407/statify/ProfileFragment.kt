@@ -27,9 +27,11 @@ private const val TAG = "ProfileFragment"
 
 class ProfileFragment : Fragment() {
     // UI Components
-    private lateinit var profileDetailsText: TextView
+    private lateinit var usernameText: TextView
+    private lateinit var emailText: TextView
     private lateinit var logoutButton: Button
     private lateinit var progressBar: ProgressBar
+    private lateinit var profileImage: ImageView
 
     // Firebase instances
     private val auth = Firebase.auth
@@ -38,14 +40,12 @@ class ProfileFragment : Fragment() {
     // Coroutine scope for async operations
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
-    private lateinit var profileImage: ImageView
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://api.spotify.com/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
     private val spotifyApi = retrofit.create(SpotifyApi::class.java)
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,11 +59,11 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Initialize views
-        profileDetailsText = view.findViewById(R.id.profileDetailsText)
+        usernameText = view.findViewById(R.id.usernameText)
+        emailText = view.findViewById(R.id.emailText)
         logoutButton = view.findViewById(R.id.logoutButton)
         progressBar = view.findViewById(R.id.progressBar)
         profileImage = view.findViewById(R.id.profileImage)
-
 
         setupLogoutButton()
         loadUserProfile()
@@ -103,7 +103,8 @@ class ProfileFragment : Fragment() {
                 }
 
                 // Clear UI
-                profileDetailsText.text = ""
+                usernameText.text = ""
+                emailText.text = ""
 
                 // Update UI in MainActivity if needed
                 (activity as? MainActivity)?.updateButtonsForLogout()
@@ -171,13 +172,15 @@ class ProfileFragment : Fragment() {
                         displayUserProfile(userData)
                     } else {
                         Log.d(TAG, "No user data found")
-                        profileDetailsText.text = "No profile data available"
+                        usernameText.text = "No profile data available"
+                        emailText.text = ""
                     }
                 }
                 .addOnFailureListener { e ->
                     showLoading(false)
                     Log.e(TAG, "Error loading profile", e)
-                    profileDetailsText.text = "Error loading profile"
+                    usernameText.text = "Error loading profile"
+                    emailText.text = ""
                     Toast.makeText(
                         requireContext(),
                         "Error loading profile: ${e.localizedMessage}",
@@ -185,78 +188,30 @@ class ProfileFragment : Fragment() {
                     ).show()
                 }
         } else {
-            profileDetailsText.text = "Please log in to view profile"
+            usernameText.text = "Please log in to view profile"
+            emailText.text = ""
             logoutButton.visibility = View.GONE
         }
     }
 
     private fun displayUserProfile(userData: Map<String, Any>?) {
         if (userData == null) {
-            profileDetailsText.text = "No profile data available"
+            usernameText.text = "Unknown User"
+            emailText.text = ""
             return
         }
 
         val displayName = userData["displayName"] as? String ?: "Unknown"
         val email = userData["email"] as? String ?: "No email"
-        val spotifyId = userData["spotifyId"] as? String ?: "No Spotify ID"
 
-
-        val profileText = buildString {
-            appendLine("Profile Information")
-            appendLine("-----------------")
-            appendLine("Display Name: $displayName")
-            appendLine("Email: $email")
-            appendLine("Spotify ID: $spotifyId")
-            appendLine()
-            append(getTopArtistsText(userData))
-            append(getTopTracksText(userData))
-            append(getTopGenresText(userData))
-        }
-
-        profileDetailsText.text = profileText
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun getTopArtistsText(userData: Map<String, Any>): String {
-        val topArtists = userData["topArtists"] as? List<Map<String, Any>> ?: return "No top artists found"
-        return buildString {
-            appendLine("Top Artists")
-            appendLine("----------")
-            topArtists.take(5).forEachIndexed { index, artist ->
-                appendLine("${index + 1}. ${artist["name"]}")
-            }
-            appendLine()
-        }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun getTopTracksText(userData: Map<String, Any>): String {
-        val topTracks = userData["topTracks"] as? List<Map<String, Any>> ?: return "No top tracks found"
-        return buildString {
-            appendLine("Top Tracks")
-            appendLine("----------")
-            topTracks.take(5).forEachIndexed { index, track ->
-                appendLine("${index + 1}. ${track["name"]} by ${track["artist"]}")
-            }
-            appendLine()
-        }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun getTopGenresText(userData: Map<String, Any>): String {
-        val topGenres = userData["topGenres"] as? List<Map<String, Any>> ?: return "No top genres found"
-        return buildString {
-            appendLine("Top Genres")
-            appendLine("----------")
-            topGenres.take(5).forEachIndexed { index, genre ->
-                appendLine("${index + 1}. ${genre["genre"]} (${genre["count"]} tracks)")
-            }
-        }
+        usernameText.text = displayName
+        emailText.text = email
     }
 
     private fun showLoading(show: Boolean) {
         progressBar.visibility = if (show) View.VISIBLE else View.GONE
-        profileDetailsText.visibility = if (show) View.GONE else View.VISIBLE
+        usernameText.visibility = if (show) View.GONE else View.VISIBLE
+        emailText.visibility = if (show) View.GONE else View.VISIBLE
         logoutButton.isEnabled = !show
     }
 

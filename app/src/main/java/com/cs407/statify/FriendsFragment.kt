@@ -27,7 +27,7 @@ class FriendsFragment : Fragment() {
 
         val cardContainer = view.findViewById<LinearLayout>(R.id.cardContainer)
 
-        val cardData = listOf("Friend 1", "Friend 2", "Friend 3", "Friend 4", "Friend 5")
+        val cardData = listOf("Friend 1", "Friend 2", "Friend 3", "Friend 4", "Friend 5", "Friend 6", "Friend 7", "Friend 8")
 
         Log.d("MADE IT TO HERE!!!!!!!!!", cardData.toString())
         for (card in cardData) {
@@ -35,13 +35,6 @@ class FriendsFragment : Fragment() {
         }
 
         return view
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        friendsListText = view.findViewById(R.id.friendsListText)
-        // Add your logic to populate friends data
     }
 
     /**

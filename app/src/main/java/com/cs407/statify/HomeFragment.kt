@@ -33,6 +33,10 @@ import android.graphics.Paint
 import android.text.TextPaint
 import android.text.style.AbsoluteSizeSpan
 import android.text.style.TypefaceSpan
+import android.widget.ImageView
+import android.widget.LinearLayout
+import androidx.viewpager2.widget.ViewPager2
+import com.bumptech.glide.Glide
 
 
 private const val TAG = "HomeFragment"
@@ -43,7 +47,7 @@ class HomeFragment : Fragment() {
     private lateinit var userEmailText: TextView
     private lateinit var listeningTimeText: TextView
     private lateinit var topTracksText: TextView
-    private lateinit var topArtistsText: TextView
+    private lateinit var viewPager: ViewPager2
     private lateinit var topGenresText: TextView
     private lateinit var loginButton: Button
     private lateinit var webView: WebView
@@ -83,7 +87,7 @@ class HomeFragment : Fragment() {
         userEmailText = view.findViewById(R.id.userEmailText)
         listeningTimeText = view.findViewById(R.id.listeningTimeText)
         topTracksText = view.findViewById(R.id.topTracksText)
-        topArtistsText = view.findViewById(R.id.topArtistsText)
+        viewPager = view.findViewById(R.id.artistCarouselViewPager)
         topGenresText = view.findViewById(R.id.topGenresText)
         webView = requireActivity().findViewById(R.id.webView)
     }
@@ -270,7 +274,14 @@ class HomeFragment : Fragment() {
                 hashMapOf(
                     "id" to artist.id,
                     "name" to artist.name,
-                    "genres" to artist.genres
+                    "genres" to artist.genres,
+                    "images" to (artist.images?.map { image ->
+                        mapOf(
+                            "url" to image.url,
+                            "height" to image.height,
+                            "width" to image.width
+                        )
+                    } ?: emptyList<Map<String, Any>>())
                 )
             },
             "topGenres" to topGenresList,
@@ -315,6 +326,27 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun setupArtistCarousel(topArtists: List<Artist>) {
+        val carouselAdapter = ArtistCarouselAdapter(
+            artists = topArtists,
+            context = requireContext()
+        )
+
+        viewPager?.apply {
+            adapter = carouselAdapter
+            offscreenPageLimit = 3
+            setPageTransformer { page, position ->
+                val scaleFactor = 0.85f
+                val minScale = 0.8f
+                val absPosition = kotlin.math.abs(position)
+
+                page.scaleX = minScale + (1 - absPosition) * (scaleFactor - minScale)
+                page.scaleY = minScale + (1 - absPosition) * (scaleFactor - minScale)
+                page.alpha = 1 - absPosition
+            }
+        }
+    }
+
     private fun updateUI(
         userData: UserData,
         topTracks: List<Track>,
@@ -324,34 +356,43 @@ class HomeFragment : Fragment() {
         userNameText.text = getString(R.string.name_format, userData.displayName)
         userEmailText.text = getString(R.string.email_format, userData.email)
 
+        setupArtistCarousel(topArtists)
+
         val tracksText = topTracks.take(10).mapIndexed { index, track ->
             val trackInfo = "${index + 1}  ${track.name} by ${track.artists.firstOrNull()?.name}"
             getStyledText(index + 1, trackInfo)
         }.joinToSpanned("\n")
         topTracksText.text = tracksText
 
-        val artistsText = topArtists.take(10).mapIndexed { index, artist ->
-            "${index + 1}  ${artist.name}"
-        }.joinToString("\n")
-        topArtistsText.text = artistsText
-
         val genresText = topGenres.mapIndexed { index, genreMap ->
             val genreInfo = "${index + 1}  ${genreMap["genre"]} (${genreMap["count"]} artists)"
             getStyledText(index + 1, genreInfo)
         }.joinToSpanned("\n")
         topGenresText.text = genresText
-
     }
 
     private fun updateUIFromFirestore(data: Map<String, Any>) {
         userNameText.text = getString(R.string.name_format, data["displayName"] as? String ?: "Unknown")
         userEmailText.text = getString(R.string.email_format, data["email"] as? String ?: "Unknown")
 
-        @Suppress("UNCHECKED_CAST")
-        val artists = (data["topArtists"] as? List<Map<String, Any>>)?.take(10)?.mapIndexed { index, artist ->
-            "${index + 1}  ${artist["name"]}"
-        }?.joinToString("\n")
-        topArtistsText.text = artists ?: "No artists available"
+        val topArtists = (data["topArtists"] as? List<Map<String, Any>>)
+            ?.take(10)
+            ?.map { artistData ->
+                Artist(
+                    id = artistData["id"] as? String ?: "",
+                    name = artistData["name"] as? String ?: "",
+                    genres = (artistData["genres"] as? List<String>) ?: listOf(),
+                    images = (artistData["images"] as? List<Map<String, Any>>)?.map { imageData ->
+                        SpotifyImage(
+                            url = imageData["url"] as? String ?: "",
+                            height = (imageData["height"] as? Number)?.toInt() ?: 0,
+                            width = (imageData["width"] as? Number)?.toInt() ?: 0
+                        )
+                    }
+                )
+            } ?: listOf()
+
+        setupArtistCarousel(topArtists)
 
         @Suppress("UNCHECKED_CAST")
         val tracks = (data["topTracks"] as? List<Map<String, Any>>)

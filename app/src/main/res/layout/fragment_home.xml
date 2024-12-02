@@ -14,12 +14,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <Button
-                android:id="@+id/loginButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Login with Spotify" />
-
             <TextView
                 android:id="@+id/userNameText"
                 android:layout_width="wrap_content"

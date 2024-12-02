@@ -1,7 +1,6 @@
 package com.cs407.statify
 
 import android.graphics.Typeface
-import android.net.Uri
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -14,7 +13,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -25,7 +23,6 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -33,30 +30,22 @@ import android.graphics.Paint
 import android.text.TextPaint
 import android.text.style.AbsoluteSizeSpan
 import android.text.style.TypefaceSpan
-import android.widget.ImageView
-import android.widget.LinearLayout
 import androidx.viewpager2.widget.ViewPager2
-import com.bumptech.glide.Glide
-
 
 private const val TAG = "HomeFragment"
 
 class HomeFragment : Fragment() {
-    // UI Components
     private lateinit var userNameText: TextView
     private lateinit var userEmailText: TextView
     private lateinit var listeningTimeText: TextView
     private lateinit var topTracksText: TextView
     private lateinit var viewPager: ViewPager2
     private lateinit var topGenresText: TextView
-    private lateinit var loginButton: Button
     private lateinit var webView: WebView
 
-    // Firebase instances
     private val auth = Firebase.auth
     private val db = Firebase.firestore
 
-    // Spotify API setup
     private val spotifyApi = Retrofit.Builder()
         .baseUrl("https://api.spotify.com/")
         .addConverterFactory(GsonConverterFactory.create())
@@ -76,13 +65,10 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initializeViews(view)
-        setupWebView()
-        setupLoginButton()
         checkAuthState()
     }
 
     private fun initializeViews(view: View) {
-        loginButton = view.findViewById(R.id.loginButton)
         userNameText = view.findViewById(R.id.userNameText)
         userEmailText = view.findViewById(R.id.userEmailText)
         listeningTimeText = view.findViewById(R.id.listeningTimeText)
@@ -92,113 +78,16 @@ class HomeFragment : Fragment() {
         webView = requireActivity().findViewById(R.id.webView)
     }
 
-    private fun setupWebView() {
-        webView.settings.apply {
-            javaScriptEnabled = true
-            domStorageEnabled = true
-            databaseEnabled = true
-            loadWithOverviewMode = true
-        }
-        WebView.setWebContentsDebuggingEnabled(true)
-        webView.visibility = View.GONE
-    }
-
-    private fun setupLoginButton() {
-        loginButton.setOnClickListener {
-            startSpotifyAuth()
-        }
-    }
-
     private fun checkAuthState() {
         auth.currentUser?.let { user ->
             Log.d(TAG, "Current Firebase user: ${user.uid}")
-            loginButton.visibility = View.GONE
+            accessToken = requireActivity().getSharedPreferences("SPOTIFY", 0)
+                .getString("access_token", null)
 
-            // Check if we have the user's Spotify data
-            lifecycleScope.launch {
-                try {
-                    val docSnapshot = db.collection("users")
-                        .document(user.uid)
-                        .get()
-                        .await()
-
-                    if (docSnapshot.exists()) {
-                        // We have data, update UI
-                        val spotifyData = docSnapshot.data
-                        spotifyData?.let { updateUIFromFirestore(it) }
-                    } else {
-                        // No data yet, show login button
-                        loginButton.visibility = View.VISIBLE
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error checking Firestore data", e)
-                    loginButton.visibility = View.VISIBLE
+            if (accessToken != null) {
+                lifecycleScope.launch {
+                    fetchSpotifyData()
                 }
-            }
-        } ?: run {
-            // No Firebase user, show login button
-            Log.d(TAG, "No Firebase user found")
-            loginButton.visibility = View.VISIBLE
-        }
-    }
-
-    private fun startSpotifyAuth() {
-        val client = SpotifyWebViewClient { token ->
-            accessToken = token
-            webView.visibility = View.GONE
-            Log.d(TAG, "Spotify Auth successful")
-
-            // Save token to SharedPreferences
-            requireActivity().getSharedPreferences("SPOTIFY", 0)
-                .edit()
-                .putString("access_token", token)
-                .apply()
-
-            lifecycleScope.launch {
-                signInToFirebase()
-            }
-        }
-
-        webView.webViewClient = client
-        val authUrl = buildSpotifyAuthUrl()
-        webView.visibility = View.VISIBLE
-        webView.loadUrl(authUrl)
-    }
-
-    private fun buildSpotifyAuthUrl(): String {
-        return Uri.Builder()
-            .scheme("https")
-            .authority("accounts.spotify.com")
-            .appendPath("authorize")
-            .appendQueryParameter("client_id", "14674d2a9e9841f3b7a0b24a5aacd090")
-            .appendQueryParameter("response_type", "token")
-            .appendQueryParameter("redirect_uri", "statify://callback")
-            .appendQueryParameter("scope", "user-read-private user-read-email user-top-read user-read-recently-played")
-            .appendQueryParameter("show_dialog", "true")
-            .build()
-            .toString()
-    }
-
-    private suspend fun signInToFirebase() {
-        try {
-            // Check if we already have a Firebase user
-            if (auth.currentUser == null) {
-                Log.d(TAG, "Attempting anonymous sign in")
-                val result = auth.signInAnonymously().await()
-                Log.d(TAG, "Anonymous sign in successful, UID: ${result.user?.uid}")
-            } else {
-                Log.d(TAG, "Already signed in to Firebase, UID: ${auth.currentUser?.uid}")
-            }
-            // Now that we're authenticated, proceed with data fetching
-            fetchSpotifyData()
-        } catch (e: Exception) {
-            Log.e(TAG, "Firebase Auth failed", e)
-            withContext(Dispatchers.Main) {
-                Toast.makeText(
-                    requireContext(),
-                    "Authentication failed: ${e.localizedMessage}",
-                    Toast.LENGTH_LONG
-                ).show()
             }
         }
     }
@@ -208,16 +97,10 @@ class HomeFragment : Fragment() {
             val firebaseUser = auth.currentUser ?: throw Exception("No Firebase user")
             val spotifyAuth = "Bearer $accessToken"
 
-            Log.d(TAG, "Fetching Spotify user profile")
             val userData = spotifyApi.getUserProfile(spotifyAuth)
-
-            Log.d(TAG, "Fetching top tracks")
             val topTracks = spotifyApi.getTopTracks(spotifyAuth)
-
-            Log.d(TAG, "Fetching top artists")
             val topArtists = spotifyApi.getTopArtists(spotifyAuth)
 
-            // Calculate top genres
             val genreCounts = mutableMapOf<String, Int>()
             topArtists.items.forEach { artist ->
                 artist.genres.forEach { genre ->
@@ -233,10 +116,8 @@ class HomeFragment : Fragment() {
                     "count" to count
                 )}
 
-            // Store in Firebase
             storeDataInFirebase(firebaseUser.uid, userData, topTracks, topArtists, topGenresList)
 
-            // Update UI
             withContext(Dispatchers.Main) {
                 updateUI(userData, topTracks.items, topArtists.items, topGenresList)
                 calculateListeningTime(spotifyAuth)
@@ -290,15 +171,9 @@ class HomeFragment : Fragment() {
             "friends" to listOf<String>()
         )
 
-        Log.d(TAG, "Storing data in Firebase for user: $firebaseUid")
-
         db.collection("users")
             .document(firebaseUid)
             .set(userDataMap)
-            .addOnSuccessListener {
-                Log.d(TAG, "Data stored in Firebase successfully")
-                loginButton.visibility = View.GONE
-            }
             .addOnFailureListener { e ->
                 Log.e(TAG, "Error storing data", e)
                 Toast.makeText(requireContext(), "Error saving data: ${e.localizedMessage}", Toast.LENGTH_LONG).show()

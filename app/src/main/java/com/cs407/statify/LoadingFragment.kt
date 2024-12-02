@@ -11,6 +11,8 @@ import android.widget.VideoView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.cs407.statify.R
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 class LoadingFragment : Fragment() {
 
@@ -41,7 +43,7 @@ class LoadingFragment : Fragment() {
 
         videoView.setOnCompletionListener {
             if (isAppReady && hasMinimumDisplayTimeElapsed()) {
-                navigateToHome()
+                navigateToNextScreen()
             } else {
                 videoView.start()
             }
@@ -53,7 +55,7 @@ class LoadingFragment : Fragment() {
             isAppReady = true
             if (videoView.isPlaying && hasMinimumDisplayTimeElapsed()) {
                 videoView.stopPlayback()
-                navigateToHome()
+                navigateToNextScreen()
             }
         }, 6000)
     }
@@ -63,7 +65,16 @@ class LoadingFragment : Fragment() {
         return elapsedTime >= minimumDisplayTime
     }
 
-    private fun navigateToHome() {
-        findNavController().navigate(R.id.action_loadingFragment_to_homeFragment)
+    private fun navigateToNextScreen() {
+        val auth = Firebase.auth
+        val hasSpotifyToken = requireActivity()
+            .getSharedPreferences("SPOTIFY", 0)
+            .getString("access_token", null) != null
+
+        if (auth.currentUser != null && hasSpotifyToken) {
+            findNavController().navigate(R.id.action_loadingFragment_to_homeFragment)
+        } else {
+            findNavController().navigate(R.id.action_loadingFragment_to_loginFragment)
+        }
     }
 }

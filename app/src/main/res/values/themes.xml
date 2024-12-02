@@ -4,6 +4,8 @@
         <!-- Customize your light theme here. -->
         <item name="colorPrimary">@color/spotify_green</item>
         <item name="colorOnPrimary">#000000</item>
+        <item name="android:statusBarColor">@color/black</item>
+
     </style>
 
     <style name="Theme.Statify" parent="Base.Theme.Statify" />

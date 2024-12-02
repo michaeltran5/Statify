@@ -46,29 +46,30 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Top Artists:"
+                android:text="@string/top_artists_header"
                 android:textStyle="bold"
                 android:textColor="@color/spotify_green"
-                android:textSize="30dp"
+                android:textSize="30sp"
                 android:layout_gravity="center_horizontal"
                 android:fontFamily="monospace" />
 
-            <TextView
-                android:id="@+id/topArtistsText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textColor="#FFFFFF"
-                android:fontFamily="sans-serif-condensed-medium" />
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/artistCarouselViewPager"
+                android:layout_width="match_parent"
+                android:layout_height="450dp"
+                android:clipToPadding="false"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:layout_marginBottom="16dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Top Tracks:"
+                android:text="@string/top_tracks_header"
                 android:textStyle="bold"
                 android:textColor="@color/spotify_green"
-                android:textSize="30dp"
+                android:textSize="30sp"
                 android:layout_gravity="center_horizontal"
                 android:fontFamily="monospace" />
 
@@ -84,10 +85,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Top Genres:"
+                android:text="@string/top_genres_header"
                 android:textStyle="bold"
                 android:textColor="@color/spotify_green"
-                android:textSize="30dp"
+                android:textSize="30sp"
                 android:layout_gravity="center_horizontal"
                 android:fontFamily="monospace" />
 

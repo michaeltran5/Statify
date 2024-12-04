@@ -26,18 +26,15 @@ import retrofit2.converter.gson.GsonConverterFactory
 private const val TAG = "ProfileFragment"
 
 class ProfileFragment : Fragment() {
-    // UI Components
     private lateinit var usernameText: TextView
     private lateinit var emailText: TextView
     private lateinit var logoutButton: Button
     private lateinit var progressBar: ProgressBar
     private lateinit var profileImage: ImageView
 
-    // Firebase instances
     private val auth = Firebase.auth
     private val db = Firebase.firestore
 
-    // Coroutine scope for async operations
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     private val retrofit = Retrofit.Builder()
@@ -58,7 +55,6 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize views
         usernameText = view.findViewById(R.id.usernameText)
         emailText = view.findViewById(R.id.emailText)
         logoutButton = view.findViewById(R.id.logoutButton)
@@ -91,31 +87,25 @@ class ProfileFragment : Fragment() {
             try {
                 showLoading(true)
 
-                // Clear Spotify token
                 requireActivity().getSharedPreferences("SPOTIFY", 0)
                     .edit()
                     .remove("access_token")
                     .apply()
 
-                // Sign out from Firebase
                 withContext(Dispatchers.IO) {
                     auth.signOut()
                 }
 
-                // Clear UI
                 usernameText.text = ""
                 emailText.text = ""
 
-                // Update UI in MainActivity if needed
                 (activity as? MainActivity)?.updateButtonsForLogout()
 
                 showLoading(false)
 
-                // Show success message
                 Toast.makeText(requireContext(), "Logged out successfully", Toast.LENGTH_SHORT).show()
 
-                // Navigate to home
-                findNavController().navigate(R.id.homeFragment)
+                findNavController().navigate(R.id.loginFragment)
 
             } catch (e: Exception) {
                 Log.e(TAG, "Error during logout", e)
@@ -139,7 +129,6 @@ class ProfileFragment : Fragment() {
                     withContext(Dispatchers.IO) {
                         val userData = spotifyApi.getUserProfile("Bearer $accessToken")
                         withContext(Dispatchers.Main) {
-                            // Update UI with the user data
                             userData.profileImageUrl?.let { imageUrl ->
                                 Glide.with(requireContext())
                                     .load(imageUrl)

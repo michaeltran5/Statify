@@ -1,6 +1,8 @@
 package com.cs407.statify
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
@@ -9,7 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
-class FriendManager(val username: String, private var friendList: ArrayList<String>) {
+class FriendManager(val username: String, var friendList: ArrayList<String>, private val context: Context) {
     private val db = Firebase.firestore
 
     /**
@@ -19,8 +21,20 @@ class FriendManager(val username: String, private var friendList: ArrayList<Stri
      *
      * @return ArrayList<Strings> of matching users, null if no matching users
      */
-    private suspend fun searchForFriend(userToSearch: String) {
-        TODO()
+    suspend fun searchForFriend(userToSearch: String) : String {
+        var searchResult: String = ""
+        val result = db.collection("users")
+            .whereEqualTo("username", userToSearch)
+            .get()
+            .await()
+
+        if (result.isEmpty) {
+            Toast.makeText(context,"Could not find user with username $userToSearch", Toast.LENGTH_SHORT).show()
+        } else {
+            searchResult = result.documents[0].get("username") as String
+            Log.d("Found Friend", searchResult)
+        }
+        return searchResult
     }
 
     /**
@@ -31,6 +45,17 @@ class FriendManager(val username: String, private var friendList: ArrayList<Stri
      * @return ArrayList<String> containing names of specified user's top tracks
      */
     private suspend fun addFriend(userToAdd: String) : ArrayList<String> {
+        TODO()
+    }
+
+    /**
+     * Removes a friend from user's friend list
+     *
+     * @param userToRemove name of user to add in database
+     *
+     * @return ArrayList<String> containing names of specified user's top tracks
+     */
+    private suspend fun removeFriend(userToRemove: String) : ArrayList<String> {
         TODO()
     }
 
@@ -84,16 +109,11 @@ class FriendManager(val username: String, private var friendList: ArrayList<Stri
      * Logs friends and top tracks of the specified user
      *
      */
-    fun displayFriends(username: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            getFriends()
-            val friendData = getFriendData("Collin K")
-            Log.d("DISPLAYFRIENDS: ", friendList.toString())
-            Log.d("FriendData: ", friendData.toString())
-            withContext(Dispatchers.Main) {
-                // Update UI here
-            }
-        }
+    suspend fun displayFriends(username: String) {
+        getFriends()
+        val friendData = getFriendData("Collin K")
+        Log.d("DISPLAYFRIENDS: ", friendList.toString())
+        Log.d("FriendData: ", friendData.toString())
     }
 
 }

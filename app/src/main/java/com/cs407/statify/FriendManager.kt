@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
-class FriendManager(val username: String, var friendList: ArrayList<String>, private val context: Context) {
+class FriendManager(val username: String, val friendList: ArrayList<String>, private val context: Context) {
     private val db = Firebase.firestore
 
     /**
@@ -42,10 +42,19 @@ class FriendManager(val username: String, var friendList: ArrayList<String>, pri
      *
      * @param userToAdd name of user to add in database
      *
-     * @return ArrayList<String> containing names of specified user's top tracks
      */
-    private suspend fun addFriend(userToAdd: String) : ArrayList<String> {
-        TODO()
+    suspend fun addFriend(userToAdd: String){
+        val result = db.collection("users")
+            .whereEqualTo("username", username)
+            .get()
+            .await()
+        if (!this.friendList.contains(userToAdd)) {
+            this.friendList.add(userToAdd)
+            result.documents[0].reference.update("friends", this.friendList)
+            Toast.makeText(context,"Added $userToAdd", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context, "$userToAdd is already your friend!", Toast.LENGTH_SHORT).show()
+        }
     }
 
     /**
@@ -53,17 +62,26 @@ class FriendManager(val username: String, var friendList: ArrayList<String>, pri
      *
      * @param userToRemove name of user to add in database
      *
-     * @return ArrayList<String> containing names of specified user's top tracks
      */
-    private suspend fun removeFriend(userToRemove: String) : ArrayList<String> {
-        TODO()
+    suspend fun removeFriend(userToRemove: String) {
+        val result = db.collection("users")
+            .whereEqualTo("username", username)
+            .get()
+            .await()
+        if (this.friendList.contains(userToRemove)) {
+            this.friendList.remove(userToRemove)
+            result.documents[0].reference.update("friends", this.friendList)
+            Toast.makeText(context,"Removed $userToRemove", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context,"$userToRemove is not your friend!", Toast.LENGTH_SHORT).show()
+        }
     }
 
     /**
      * Queries Firestore DB for a specific user's top tracks
      *
      * @param username name of user in database
-     * @return ArrayList<String> containing names of specified user's top tracks
+     *
      */
     private suspend fun getFriendData(username: String) : ArrayList<String> {
         val topTracks: ArrayList<String> = ArrayList()
@@ -89,7 +107,7 @@ class FriendManager(val username: String, var friendList: ArrayList<String>, pri
      * Queries Firestore DB for names of a user's friends and sets friendList accordingly
      *
      */
-    private suspend fun getFriends() {
+    suspend fun getFriends() {
         val result = db.collection("users")
             .whereEqualTo("username", username)
             .get()
@@ -104,16 +122,4 @@ class FriendManager(val username: String, var friendList: ArrayList<String>, pri
             }
         }
     }
-
-    /**
-     * Logs friends and top tracks of the specified user
-     *
-     */
-    suspend fun displayFriends(username: String) {
-        getFriends()
-        val friendData = getFriendData("Collin K")
-        Log.d("DISPLAYFRIENDS: ", friendList.toString())
-        Log.d("FriendData: ", friendData.toString())
-    }
-
 }

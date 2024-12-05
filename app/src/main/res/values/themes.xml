@@ -6,6 +6,11 @@
         <item name="colorOnPrimary">#000000</item>
         <item name="android:statusBarColor">@color/black</item>
 
+        <item name="materialButtonStyle">@style/RoundedButtonStyle</item>
+    </style>
+
+    <style name="RoundedButtonStyle" parent="Widget.MaterialComponents.Button">
+        <item name="cornerRadius">40dp</item>
     </style>
 
     <style name="Theme.Statify" parent="Base.Theme.Statify" />

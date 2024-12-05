@@ -15,8 +15,8 @@
             android:padding="16dp">
 
             <ImageView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:src="@mipmap/ic_launcher_foreground"
                 android:layout_gravity="center_horizontal" />
 
@@ -26,10 +26,10 @@
                 android:layout_marginTop="16dp"
                 android:text="@string/top_artists_header"
                 android:textStyle="bold"
-                android:textColor="@color/spotify_green"
+                android:textColor="@color/white"
                 android:textSize="30sp"
                 android:layout_gravity="center_horizontal"
-                android:fontFamily="monospace" />
+                android:fontFamily="sans-serif-medium" />
 
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/artistCarouselViewPager"
@@ -45,10 +45,10 @@
                 android:layout_height="wrap_content"
                 android:text="@string/top_tracks_header"
                 android:textStyle="bold"
-                android:textColor="@color/spotify_green"
+                android:textColor="@color/white"
                 android:textSize="30sp"
                 android:layout_gravity="center_horizontal"
-                android:fontFamily="monospace" />
+                android:fontFamily="sans-serif-medium" />
 
             <FrameLayout
                 android:id="@+id/topTracksContainer"
@@ -61,13 +61,13 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="50dp"
+                android:layout_marginTop="30dp"
                 android:text="@string/top_genres_header"
                 android:textStyle="bold"
-                android:textColor="@color/spotify_green"
+                android:textColor="@color/white"
                 android:textSize="30sp"
                 android:layout_gravity="center_horizontal"
-                android:fontFamily="monospace" />
+                android:fontFamily="sans-serif-medium" />
 
             <TextView
                 android:id="@+id/topGenresText"
@@ -75,7 +75,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:textColor="#FFFFFF"
-                android:fontFamily="sans-serif-condensed-medium"
+                android:fontFamily="sans-serif-light"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp" />
 

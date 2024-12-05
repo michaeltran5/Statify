@@ -66,7 +66,6 @@ class HomeFragment : Fragment() {
     }
 
     private fun initializeViews(view: View) {
-        topTracksText = view.findViewById(R.id.topTracksText)
         viewPager = view.findViewById(R.id.artistCarouselViewPager)
         topGenresText = view.findViewById(R.id.topGenresText)
         webView = requireActivity().findViewById(R.id.webView)
@@ -222,11 +221,13 @@ class HomeFragment : Fragment() {
     ) {
         setupArtistCarousel(topArtists)
 
-        val tracksText = topTracks.take(10).mapIndexed { index, track ->
-            val trackInfo = "${index + 1}  ${track.name} by ${track.artists.firstOrNull()?.name}"
-            getStyledText(index + 1, trackInfo)
-        }.joinToSpanned("\n")
-        topTracksText.text = tracksText
+        val topTracksFragment = TopTracksFragment().apply {
+            setTracks(topTracks.take(5))
+            setAccessToken(accessToken.toString())
+        }
+        childFragmentManager.beginTransaction()
+            .replace(R.id.topTracksContainer, topTracksFragment)
+            .commit()
 
         val genresText = topGenres.mapIndexed { index, genreMap ->
             val genreInfo = "${index + 1}  ${genreMap["genre"]} (${genreMap["count"]} artists)"

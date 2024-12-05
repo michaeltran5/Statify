@@ -22,6 +22,17 @@ class TopTracksFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: TopTracksAdapter
 
+    private var providedTracks: List<Track>? = null
+    private var providedAccessToken: String? = null
+
+    fun setTracks(tracks: List<Track>) {
+        providedTracks = tracks
+    }
+
+    fun setAccessToken(token: String) {
+        providedAccessToken = token
+    }
+
     private val spotifyApi = Retrofit.Builder()
         .baseUrl("https://api.spotify.com/")
         .addConverterFactory(GsonConverterFactory.create())
@@ -49,7 +60,11 @@ class TopTracksFragment : Fragment() {
         val accessToken = sharedPreferences.getString("access_token", null)
 
         if (accessToken != null) {
-            fetchTopTracks(accessToken)
+            if (providedTracks == null) {
+                fetchTopTracks(accessToken)
+            } else {
+                adapter.submitList(providedTracks!!)
+            }
         } else {
             Toast.makeText(requireContext(), "Please login first", Toast.LENGTH_LONG).show()
         }

@@ -30,12 +30,16 @@ import android.graphics.Paint
 import android.text.TextPaint
 import android.text.style.AbsoluteSizeSpan
 import android.text.style.TypefaceSpan
+import android.widget.FrameLayout
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 
 private const val TAG = "HomeFragment"
 
 class HomeFragment : Fragment() {
-    private lateinit var topTracksText: TextView
+    private lateinit var topTracksContainer: FrameLayout
+    private lateinit var topTracksRecyclerView: RecyclerView
     private lateinit var viewPager: ViewPager2
     private lateinit var topGenresText: TextView
     private lateinit var webView: WebView
@@ -66,6 +70,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun initializeViews(view: View) {
+        topTracksContainer = view.findViewById(R.id.topTracksContainer)
         viewPager = view.findViewById(R.id.artistCarouselViewPager)
         topGenresText = view.findViewById(R.id.topGenresText)
         webView = requireActivity().findViewById(R.id.webView)
@@ -221,13 +226,33 @@ class HomeFragment : Fragment() {
     ) {
         setupArtistCarousel(topArtists)
 
-        val topTracksFragment = TopTracksFragment().apply {
-            setTracks(topTracks.take(5))
-            setAccessToken(accessToken.toString())
+        topTracksRecyclerView = RecyclerView(requireContext())
+        topTracksRecyclerView.layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        topTracksRecyclerView.layoutManager = LinearLayoutManager(
+            context,
+            LinearLayoutManager.VERTICAL,
+            false
+        )
+
+        topTracksRecyclerView.viewTreeObserver.addOnGlobalLayoutListener {
+            val itemView = (topTracksRecyclerView.layoutManager as LinearLayoutManager).findViewByPosition(0)
+            itemView?.let {
+                val itemHeight = it.measuredHeight
+                val totalHeight = itemHeight * 6 // Adjust for 5 items
+                topTracksRecyclerView.layoutParams.height = totalHeight
+                topTracksRecyclerView.requestLayout()
+            }
         }
-        childFragmentManager.beginTransaction()
-            .replace(R.id.topTracksContainer, topTracksFragment)
-            .commit()
+
+        val topTracksAdapter = TopTracksAdapter()
+        topTracksRecyclerView.adapter = topTracksAdapter
+        topTracksAdapter.submitList(topTracks.take(5))
+
+        topTracksContainer.addView(topTracksRecyclerView)
 
         val genresText = topGenres.mapIndexed { index, genreMap ->
             val genreInfo = "${index + 1}  ${genreMap["genre"]} (${genreMap["count"]} artists)"
@@ -263,7 +288,6 @@ class HomeFragment : Fragment() {
                 val trackInfo = "${index + 1}  ${track["name"]} by ${track["artist"]}"
                 getStyledText(index + 1, trackInfo)
             }?.joinToSpanned("\n")
-        topTracksText.text = tracks ?: "No tracks available"
 
         val genres = (data["topGenres"] as? List<Map<String, Any>>)
             ?.mapIndexed { index, genre ->

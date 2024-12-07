@@ -103,6 +103,7 @@
         android:layout_height="wrap_content"
         android:background="@color/spotify_green"
         android:text="Logout"
+        android:layout_marginBottom="56dp"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

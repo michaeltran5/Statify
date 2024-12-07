@@ -1,15 +1,17 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/black">
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_fragment"
         android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginBottom="1dp"
         app:defaultNavHost="true"
-        app:layout_constraintBottom_toTopOf="@id/bottomButtonLayout"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:navGraph="@navigation/nav_graph" />
 
@@ -17,9 +19,9 @@
         android:id="@+id/bottomButtonLayout"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@color/black"
         android:orientation="horizontal"
         android:padding="4dp"
+        android:background="@drawable/bottom_gradient"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <Button

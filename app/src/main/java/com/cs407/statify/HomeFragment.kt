@@ -203,7 +203,7 @@ class HomeFragment : Fragment() {
             context = requireContext()
         )
 
-        viewPager?.apply {
+        viewPager.apply {
             adapter = carouselAdapter
             offscreenPageLimit = 3
             setPageTransformer { page, position ->

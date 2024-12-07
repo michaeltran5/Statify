@@ -2,7 +2,6 @@ package com.cs407.statify
 
 import android.app.ActionBar.LayoutParams
 import android.graphics.Color
-import android.icu.text.ListFormatter.Width
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
@@ -12,27 +11,33 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.cardview.widget.CardView
-import androidx.core.view.marginTop
 import androidx.fragment.app.Fragment
-import com.bumptech.glide.Glide
-import com.cs407.statify.R
+import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.util.ArrayList
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class FriendsFragment : Fragment() {
 
-    lateinit var friendManager: FriendManager
-    lateinit var cardContainer: LinearLayout
+    private lateinit var friendManager: FriendManager
+    private lateinit var cardContainer: LinearLayout
+    private lateinit var userData: UserData
+    private val auth = Firebase.auth
+
+    private val spotifyApi = Retrofit.Builder()
+        .baseUrl("https://api.spotify.com/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(SpotifyApi::class.java)
+
+    private var accessToken: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,9 +57,18 @@ class FriendsFragment : Fragment() {
             handleSearch(view)
         }
 
-        //val cardData = listOf("Friend 1", "Friend 2", "Friend 3", "Friend 4", "Friend 5", "Friend 6", "Friend 7", "Friend 8")
         CoroutineScope(Dispatchers.Main).launch {
-            val username = "Collin K"
+            auth.currentUser?.let { _ ->
+                accessToken = requireActivity().getSharedPreferences("SPOTIFY", 0)
+                    .getString("access_token", null)
+                
+                val spotifyAuth = "Bearer $accessToken"
+                userData = spotifyApi.getUserProfile(spotifyAuth)
+            }
+
+            val username = userData.displayName as? String
+                ?: "Unknown"
+
             friendManager = FriendManager(username, ArrayList<String>(), context)
             friendManager.getFriends()
             populateCards()
@@ -118,6 +132,19 @@ class FriendsFragment : Fragment() {
                 i++
             }
         }
+    }
+
+    /**
+     * Opens data page for specified friend
+     *
+     * @param friendName name of friend to open page for
+     *
+     */
+    private fun openFriendDataPage(friendName: String){
+        val bundle = Bundle()
+        bundle.putString("friend", friendName)
+        bundle.putSerializable("friendManager", friendManager)
+        findNavController().navigate(R.id.action_friendsFragment_to_friendsDataFragment, bundle)
     }
 
     /**
@@ -206,6 +233,7 @@ class FriendsFragment : Fragment() {
         //cardView.addView(imageView)
         cardView.setOnClickListener {
             Log.d("CARD CLICKED!", friend)
+            openFriendDataPage(friend)
         }
 
         parent.addView(cardView)

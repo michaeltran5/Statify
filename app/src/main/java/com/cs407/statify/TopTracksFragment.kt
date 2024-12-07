@@ -79,7 +79,7 @@ class TopTracksAdapter : RecyclerView.Adapter<TopTracksAdapter.TrackViewHolder>(
     private var tracks: List<Track> = emptyList()
 
     fun submitList(newTracks: List<Track>) {
-        tracks = newTracks.take(50) // Ensure we only take top 10 even if more are returned
+        tracks = newTracks.take(50) // Ensure we only take top 50 even if more are returned
         notifyDataSetChanged()
     }
 

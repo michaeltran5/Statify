@@ -39,15 +39,27 @@
     </fragment>
 
     <fragment
-        android:id="@+id/friendsFragment"
-        android:name="com.cs407.statify.FriendsFragment"
-        android:label="FriendsFragment">
-    </fragment>
-
-    <fragment
         android:id="@+id/profileFragment"
         android:name="com.cs407.statify.ProfileFragment"
         android:label="ProfileFragment">
     </fragment>
+
+    <fragment
+        android:id="@+id/friendsFragment"
+        android:name="com.cs407.statify.FriendsFragment"
+        android:label="FriendsFragment">
+        <action
+            android:id="@+id/action_friendsFragment_to_friendsDataFragment"
+            app:destination="@id/friendsDataFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/friendsDataFragment"
+        android:name="com.cs407.statify.FriendsDataFragment"
+        android:label="FriendsDataFragment">
+        <action
+            android:id="@+id/action_friendsDataFragment_to_friendsFragment"
+            app:destination="@id/friendsFragment" />
+</fragment>
 
 </navigation>

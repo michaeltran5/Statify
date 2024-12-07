@@ -10,8 +10,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.io.Serializable
 
-class FriendManager(val username: String, val friendList: ArrayList<String>, private val context: Context) {
+class FriendManager(val username: String, val friendList: ArrayList<String>, @Transient private val context: Context) : Serializable {
     private val db = Firebase.firestore
 
     /**
@@ -83,7 +84,7 @@ class FriendManager(val username: String, val friendList: ArrayList<String>, pri
      * @param username name of user in database
      *
      */
-    private suspend fun getFriendData(username: String) : ArrayList<String> {
+    suspend fun getFriendData(username: String) : ArrayList<String> {
         val topTracks: ArrayList<String> = ArrayList()
         val result = db.collection("users")
             .whereEqualTo("username", username)
@@ -99,6 +100,7 @@ class FriendManager(val username: String, val friendList: ArrayList<String>, pri
                     topTracks.add(track["name"].toString())
                 }
             }
+
         }
         return topTracks
     }

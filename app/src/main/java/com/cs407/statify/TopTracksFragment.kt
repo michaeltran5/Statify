@@ -39,12 +39,12 @@ class TopTracksFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        recyclerView = view.findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(context)
         adapter = TopTracksAdapter()
-        recyclerView.adapter = adapter
+        recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView).apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = this@TopTracksFragment.adapter
+        }
 
-        // Get access token from SharedPreferences
         val sharedPreferences = requireActivity().getSharedPreferences("SPOTIFY", 0)
         val accessToken = sharedPreferences.getString("access_token", null)
 

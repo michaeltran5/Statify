@@ -29,7 +29,7 @@
                 android:textColor="@color/white"
                 android:textSize="30sp"
                 android:layout_gravity="center_horizontal"
-                android:fontFamily="sans-serif-medium" />
+                android:fontFamily="@font/metroplis" />
 
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/artistCarouselViewPager"
@@ -48,7 +48,7 @@
                 android:textColor="@color/white"
                 android:textSize="30sp"
                 android:layout_gravity="center_horizontal"
-                android:fontFamily="sans-serif-medium" />
+                android:fontFamily="@font/metroplis" />
 
             <FrameLayout
                 android:id="@+id/topTracksContainer"
@@ -67,7 +67,7 @@
                 android:textColor="@color/white"
                 android:textSize="30sp"
                 android:layout_gravity="center_horizontal"
-                android:fontFamily="sans-serif-medium" />
+                android:fontFamily="@font/metroplis" />
 
             <TextView
                 android:id="@+id/topGenresText"

@@ -27,6 +27,7 @@ private const val TAG = "ProfileFragment"
 
 class ProfileFragment : Fragment() {
     private lateinit var usernameText: TextView
+    private lateinit var friendCountText: TextView
     private lateinit var emailText: TextView
     private lateinit var logoutButton: Button
     private lateinit var progressBar: ProgressBar
@@ -60,6 +61,7 @@ class ProfileFragment : Fragment() {
         logoutButton = view.findViewById(R.id.logoutButton)
         progressBar = view.findViewById(R.id.progressBar)
         profileImage = view.findViewById(R.id.profileImage)
+        friendCountText = view.findViewById(R.id.friendCount)
 
         setupLogoutButton()
         loadUserProfile()
@@ -192,9 +194,11 @@ class ProfileFragment : Fragment() {
 
         val displayName = userData["displayName"] as? String ?: "Unknown"
         val email = userData["email"] as? String ?: "No email"
+        val friendCount = userData["friends"] as? String ?: "No Friends?"
 
         usernameText.text = displayName
         emailText.text = email
+        friendCountText.text = friendCount
     }
 
     private fun showLoading(show: Boolean) {

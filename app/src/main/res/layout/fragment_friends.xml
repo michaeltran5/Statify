@@ -26,8 +26,9 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:text="Friends"
-                android:textColor="@color/spotify_green"
-                android:textSize="40sp"
+                android:fontFamily="@font/metroplis"
+                android:textColor="#FFFFFF"
+                android:textSize="30sp"
                 android:textStyle="bold" />
 
             <LinearLayout

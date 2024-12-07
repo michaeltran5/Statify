@@ -27,7 +27,7 @@
                 android:fontFamily="@font/metroplis"
                 android:textAlignment="center"
                 android:textSize="24sp"
-                android:textColor="@color/spotify_green"
+                android:textColor="#FFFFFF"
                 android:textStyle="bold"
                 android:paddingBottom="16dp"/>
 
@@ -61,7 +61,7 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="16dp"
                 android:fontFamily="@font/metroplis"
-                android:textColor="@color/spotify_green"
+                android:textColor="#FFFFFF"
                 android:textSize="28sp"
                 android:textStyle="bold" />
             <TextView
@@ -70,7 +70,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/metroplis"
                 android:layout_marginTop="8dp"
-                android:textColor="@color/spotify_green"
+                android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:alpha="0.8" />
             <TextView
@@ -79,7 +79,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/metroplis"
                 android:layout_marginTop="8dp"
-                android:textColor="@color/spotify_green"
+                android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:alpha="0.8" />
 

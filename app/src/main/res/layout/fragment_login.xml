@@ -26,6 +26,7 @@
             android:backgroundTint="@color/spotify_green"
             android:padding="16dp"
             android:text="Login with Spotify"
+            android:fontFamily="@font/metroplis"
             android:textColor="@color/black" />
 
     </LinearLayout>

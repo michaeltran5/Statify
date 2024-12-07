@@ -5,6 +5,7 @@
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="8dp"
     android:layout_marginVertical="4dp"
+    android:backgroundTint="#212121"
     app:cardCornerRadius="8dp"
     app:cardElevation="2dp">
 
@@ -20,6 +21,7 @@
             android:gravity="center"
             android:textSize="16sp"
             android:textStyle="bold"
+            android:textColor="#FFFFFF"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -43,6 +45,7 @@
             android:maxLines="1"
             android:textSize="16sp"
             android:textStyle="bold"
+            android:textColor="#FFFFFF"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/trackImage"
             app:layout_constraintTop_toTopOf="parent" />
@@ -55,6 +58,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textSize="14sp"
+            android:textColor="#b3b3b3"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/trackName"
             app:layout_constraintTop_toBottomOf="@id/trackName" />
@@ -68,6 +72,7 @@
             android:maxLines="1"
             android:textSize="12sp"
             android:textStyle="italic"
+            android:textColor="#b3b3b3"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/trackName"
             app:layout_constraintTop_toBottomOf="@id/artistName" />

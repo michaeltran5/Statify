@@ -326,7 +326,7 @@ class HomeFragment : Fragment() {
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
             )
 
-            val numberTypeface = Typeface.create("monospace", Typeface.BOLD)
+            val numberTypeface = Typeface.create("@font/metropolis", Typeface.BOLD)
             spannable.setSpan(
                 CustomTypefaceSpan(numberTypeface),
                 startIndex,

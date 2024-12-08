@@ -110,8 +110,9 @@
         android:id="@+id/logoutButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/spotify_green"
+        android:background="@drawable/button_rounded"
         android:text="Logout"
+        android:fontFamily="@font/metroplis"
         android:layout_marginBottom="56dp"
         app:layout_constraintBottom_toBottomOf="parent" />
 

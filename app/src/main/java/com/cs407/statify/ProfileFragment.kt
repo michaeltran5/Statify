@@ -6,12 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
@@ -30,8 +31,9 @@ class ProfileFragment : Fragment() {
     private lateinit var friendCountText: TextView
     private lateinit var emailText: TextView
     private lateinit var logoutButton: Button
-    private lateinit var progressBar: ProgressBar
     private lateinit var profileImage: ImageView
+    private lateinit var recentlyPlayedRecyclerView: RecyclerView
+
 
     private val auth = Firebase.auth
     private val db = Firebase.firestore
@@ -59,12 +61,13 @@ class ProfileFragment : Fragment() {
         usernameText = view.findViewById(R.id.usernameText)
         emailText = view.findViewById(R.id.emailText)
         logoutButton = view.findViewById(R.id.logoutButton)
-        progressBar = view.findViewById(R.id.progressBar)
         profileImage = view.findViewById(R.id.profileImage)
         friendCountText = view.findViewById(R.id.friendCount)
+        recentlyPlayedRecyclerView = view.findViewById(R.id.recentlyPlayedRecyclerView)
 
         setupLogoutButton()
         loadUserProfile()
+        fetchRecentlyPlayedTracks()
     }
 
     private fun setupLogoutButton() {
@@ -146,6 +149,31 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    private fun fetchRecentlyPlayedTracks() {
+        coroutineScope.launch {
+            try {
+                val sharedPreferences = requireActivity().getSharedPreferences("SPOTIFY", 0)
+                val accessToken = sharedPreferences.getString("access_token", null)
+
+                if (accessToken != null) {
+                    val recentlyPlayed = withContext(Dispatchers.IO) {
+                        spotifyApi.getRecentlyPlayed("Bearer $accessToken")
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        val trackAdapter = TopTracksAdapter()
+                        recentlyPlayedRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+                        recentlyPlayedRecyclerView.adapter = trackAdapter
+                        val tracks = recentlyPlayed.items.map { it.track }
+                        trackAdapter.submitList(tracks.take(25))
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching recently played tracks", e)
+            }
+        }
+    }
+
     private fun loadUserProfile() {
         val currentUser = auth.currentUser
         if (currentUser != null) {
@@ -202,7 +230,6 @@ class ProfileFragment : Fragment() {
     }
 
     private fun showLoading(show: Boolean) {
-        progressBar.visibility = if (show) View.VISIBLE else View.GONE
         usernameText.visibility = if (show) View.GONE else View.VISIBLE
         emailText.visibility = if (show) View.GONE else View.VISIBLE
         logoutButton.isEnabled = !show

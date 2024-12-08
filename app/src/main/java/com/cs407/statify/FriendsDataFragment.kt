@@ -50,8 +50,6 @@ class FriendsDataFragment : Fragment() {
             findNavController().navigate(R.id.action_friendsDataFragment_to_friendsFragment)
         }
 
-        TopTracksAdapter.TrackViewHolder(view)
-
         CoroutineScope(Dispatchers.Main).launch {
             topTracks = friendManager.getFriendData(friendName)
             Log.d("Logged!", topTracks.toString())

@@ -1,6 +1,7 @@
 package com.cs407.statify
 
 import android.app.ActionBar.LayoutParams
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -14,6 +15,7 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.cardview.widget.CardView
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.ktx.auth
@@ -30,6 +32,7 @@ class FriendsFragment : Fragment() {
     private lateinit var cardContainer: LinearLayout
     private lateinit var userData: UserData
     private val auth = Firebase.auth
+    private lateinit var context: Context
 
     private val spotifyApi = Retrofit.Builder()
         .baseUrl("https://api.spotify.com/")
@@ -51,7 +54,7 @@ class FriendsFragment : Fragment() {
 
         val searchButton = view.findViewById<ImageButton>(R.id.searchButton)
 
-        val context = requireContext()
+        context = requireContext()
 
         searchButton.setOnClickListener {
             handleSearch(view)
@@ -61,7 +64,7 @@ class FriendsFragment : Fragment() {
             auth.currentUser?.let { _ ->
                 accessToken = requireActivity().getSharedPreferences("SPOTIFY", 0)
                     .getString("access_token", null)
-                
+
                 val spotifyAuth = "Bearer $accessToken"
                 userData = spotifyApi.getUserProfile(spotifyAuth)
             }
@@ -103,6 +106,7 @@ class FriendsFragment : Fragment() {
                 val cardContainer = view.findViewById<LinearLayout>(R.id.cardContainer)
                 addCardView(cardContainer, friend, false)
             }
+            inputField.text.clear()
         }
     }
 
@@ -170,7 +174,7 @@ class FriendsFragment : Fragment() {
         cardView.layoutParams = layoutParams
 
         cardView.cardElevation = 8f
-        val cardColor = context?.getColor(R.color.dark_grey) ?: Color.CYAN
+        val cardColor = context.getColor(R.color.dark_grey) ?: Color.CYAN
         cardView.setCardBackgroundColor(cardColor)
         cardView.radius = 12f
 
@@ -186,17 +190,18 @@ class FriendsFragment : Fragment() {
 
         //val imageView = ImageView(requireContext())
 
-        val textView = TextView(requireContext())
+        val textView = TextView(context)
         textView.width = LayoutParams.MATCH_PARENT
         textView.text = friend
         textView.textSize = 30f
         textView.setPadding(10, 10, 10, 5)
         textView.gravity = Gravity.CENTER
-        val textColor = context?.getColor(R.color.spotify_green) ?: Color.CYAN
+        val textColor = context.getColor(R.color.white) ?: Color.CYAN
         textView.setTextColor(textColor)
+        textView.typeface = ResourcesCompat.getFont(context, R.font.metroplis)
 
 
-        val buttonView = Button(requireContext())
+        val buttonView = Button(context)
         if (remove){
             action = "Remove Friend"
             color = Color.RED
@@ -209,7 +214,7 @@ class FriendsFragment : Fragment() {
             }
         } else {
             action = "Add Friend"
-            color = Color.WHITE
+            color = context.getColor(R.color.spotify_green)
             buttonView.setOnClickListener {
                 CoroutineScope(Dispatchers.Main).launch {
                     friendManager.addFriend(friend)

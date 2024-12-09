@@ -76,7 +76,10 @@ class LoginFragment : Fragment() {
                 if (auth.currentUser == null) {
                     auth.signInAnonymously().await()
                 }
-                findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
+                val bundle = Bundle().apply {
+                    putBoolean("fromLogin", true)
+                }
+                findNavController().navigate(R.id.action_loginFragment_to_homeFragment, bundle)
             }
         }
 

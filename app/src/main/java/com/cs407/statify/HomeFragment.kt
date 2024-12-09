@@ -1,5 +1,7 @@
 package com.cs407.statify
 
+import android.app.Dialog
+import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Spannable
@@ -27,13 +29,17 @@ import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import android.graphics.Paint
+import android.graphics.drawable.ColorDrawable
 import android.text.TextPaint
 import android.text.style.AbsoluteSizeSpan
 import android.text.style.TypefaceSpan
+import android.view.Window
 import android.widget.FrameLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 
 private const val TAG = "HomeFragment"
 
@@ -66,7 +72,30 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initializeViews(view)
+        if (arguments?.getBoolean("fromLogin", false) == true) {
+            showWelcomeDialog()
+        }
         checkAuthState()
+    }
+
+    private fun showWelcomeDialog() {
+        Dialog(requireContext()).apply {
+            requestWindowFeature(Window.FEATURE_NO_TITLE)
+            setContentView(R.layout.dialog_welcome)
+            window?.setLayout(
+                (resources.displayMetrics.widthPixels * 0.9).toInt(),
+                (resources.displayMetrics.heightPixels * 0.8).toInt()
+            )
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+            val viewPager = findViewById<ViewPager2>(R.id.welcomeViewPager)
+            val tabLayout = findViewById<TabLayout>(R.id.tabDots)
+
+            viewPager.adapter = WelcomeCarouselAdapter(this)
+            TabLayoutMediator(tabLayout, viewPager) { _, _ -> }.attach()
+
+            show()
+        }
     }
 
     private fun initializeViews(view: View) {

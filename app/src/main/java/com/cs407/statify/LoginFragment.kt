@@ -8,9 +8,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
 import android.widget.Button
+import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
@@ -37,6 +39,12 @@ class LoginFragment : Fragment() {
         initializeViews(view)
         setupWebView()
         setupLoginButton()
+        requireActivity().findViewById<LinearLayout>(R.id.bottomButtonLayout).visibility = View.GONE
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        requireActivity().findViewById<LinearLayout>(R.id.bottomButtonLayout).visibility = View.VISIBLE
     }
 
     private fun initializeViews(view: View) {

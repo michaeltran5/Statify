@@ -22,7 +22,12 @@
         android:label="LoginFragment">
         <action
             android:id="@+id/action_loginFragment_to_homeFragment"
-            app:destination="@id/homeFragment" />
+            app:destination="@id/homeFragment">
+            <argument
+                android:name="fromLogin"
+                android:defaultValue="false"
+                app:argType="boolean" />
+        </action>
     </fragment>
 
     <fragment

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/titleText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:elevation="8dp"
+        android:shadowColor="#000000"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="4"
+        android:layout_marginTop="48dp"
+        android:layout_marginBottom="16dp"
+        android:lineSpacingMultiplier="1.5"
+        android:fontFamily="@font/metroplis"/>
+
+    <TextView
+        android:id="@+id/subtitleText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#CCCCCC"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:elevation="4dp"
+        android:shadowColor="#000000"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+        android:fontFamily="@font/metroplis"
+        android:lineSpacingMultiplier="1.5"/>
+
+    <Button
+        android:id="@+id/viewStatsButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="View Stats"
+        android:visibility="gone"
+        android:layout_marginTop="24dp"
+        android:backgroundTint="@color/spotify_green"
+        android:fontFamily="@font/metroplis"/>
+
+</LinearLayout>

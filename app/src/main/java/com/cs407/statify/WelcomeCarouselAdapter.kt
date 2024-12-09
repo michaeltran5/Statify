@@ -12,10 +12,15 @@ import android.text.Html
 class WelcomeCarouselAdapter(private val dialog: Dialog) : RecyclerView.Adapter<WelcomeCarouselAdapter.SlideViewHolder>() {
 
     private val slides = listOf(
-        Slide(Html.fromHtml("Welcome to <font color='#1DB954'><b><big>Statify</big></b></font>", Html.FROM_HTML_MODE_LEGACY),"Your personal music stats dashboard\n\nHere's what you can do.",false),
-        Slide("Track Your Music Journey", "Discover your top artists, songs, and genres throughout the year. See how your music taste evolves over time.", false),
-        Slide("Connect with Friends", "Add friends to explore their music stats and see what they're listening to. Compare tastes and discover new music together.", false),
-        Slide("Thank You!", "Thank you for choosing Statify.\n\nWe hope you find everything you need.\n\nNow let's see those stats!", true)
+        Slide(Html.fromHtml("<font color='#1DB954'><b><big>Statify</big></b></font>",
+            Html.FROM_HTML_MODE_LEGACY),"Your personal music stats dashboard\n\n" +
+                "Here's what you can do.",false),
+        Slide("Track Your Music Journey", "Discover your top artists, songs, and " +
+                "genres throughout the year. See how your music taste evolves over time.", false),
+        Slide("Connect with Friends", "Add friends to explore their music stats and " +
+                "see what they're listening to. Compare tastes and discover new music together.", false),
+        Slide("Thank You!", "Thank you for choosing Statify.\n\nWe hope you find " +
+                "everything you need.\n\nNow let's see those stats!", true)
     )
 
     data class Slide(val title: CharSequence, val subtitle: String, val showButton: Boolean)

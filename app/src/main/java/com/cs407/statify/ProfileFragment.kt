@@ -165,7 +165,7 @@ class ProfileFragment : Fragment() {
                         recentlyPlayedRecyclerView.layoutManager = LinearLayoutManager(requireContext())
                         recentlyPlayedRecyclerView.adapter = trackAdapter
                         val tracks = recentlyPlayed.items.map { it.track }
-                        trackAdapter.submitList(tracks.take(25))
+                        trackAdapter.submitList(tracks.take(5))
                     }
                 }
             } catch (e: Exception) {

@@ -25,6 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import android.content.res.ColorStateList
 
 class FriendsFragment : Fragment() {
 
@@ -174,8 +175,8 @@ class FriendsFragment : Fragment() {
         cardView.layoutParams = layoutParams
 
         cardView.cardElevation = 8f
-        val cardColor = context.getColor(R.color.dark_grey) ?: Color.CYAN
-        cardView.setCardBackgroundColor(cardColor)
+        cardView.setCardBackgroundColor(Color.TRANSPARENT)
+        cardView.setBackgroundResource(R.drawable.friend_card_background)
         cardView.radius = 12f
 
         val cardLayoutVertical = LinearLayout(requireContext())

@@ -95,10 +95,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateSelectedButton(selectedId: Int) {
-        homeButton.isSelected = selectedId == R.id.homeFragment
-        topTracksButton.isSelected = selectedId == R.id.topTracksFragment
-        friendsButton.isSelected = selectedId == R.id.friendsFragment
-        profileButton.isSelected = selectedId == R.id.profileFragment
+        homeButton.isSelected = false
+        topTracksButton.isSelected = false
+        friendsButton.isSelected = false
+        profileButton.isSelected = false
+
+        when (selectedId) {
+            R.id.homeFragment -> homeButton.isSelected = true
+            R.id.topTracksFragment -> topTracksButton.isSelected = true
+            R.id.friendsFragment, R.id.friendsDataFragment -> friendsButton.isSelected = true
+            R.id.profileFragment -> profileButton.isSelected = true
+        }
     }
 
     fun updateButtonsForLogout() {

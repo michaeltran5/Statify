@@ -6,6 +6,10 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.webkit.WebResourceRequest
 
+/**
+ * Sets up the Spotify Web View that users see during login process
+ *
+ */
 class SpotifyWebViewClient(private val onAuthComplete: (String) -> Unit) : WebViewClient() {
 
     @Deprecated("Deprecated in Java")

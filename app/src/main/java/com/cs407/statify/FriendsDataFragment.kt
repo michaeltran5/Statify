@@ -31,9 +31,15 @@ class FriendsDataFragment : Fragment() {
     data class TrackData(
         val name: String = "",
         val artists: String = "",
-        val album: String = "",
-        val id: String = ""
-    )
+        val album: Album = Album("", "", null),
+        val id: String = "",
+    ) {
+        val imageUrl: String?
+            get() = album.images?.getBestImageUrl()
+
+        fun getImage(size: Int = SpotifyImageSizes.MEDIUM): String? =
+            album.images?.getBestImageUrl(size)
+    }
 
     private lateinit var friendName: String
     private lateinit var friendManager: FriendManager
@@ -66,7 +72,8 @@ class FriendsDataFragment : Fragment() {
     private fun loadFriendData(view: View) {
 
         friendName = arguments?.getString("friend") ?: ""
-        friendManager = arguments?.getSerializable("friendManager") as? FriendManager ?: FriendManager("", ArrayList<String>(), requireContext())
+        friendManager = arguments?.getSerializable("friendManager") as? FriendManager ?:
+        FriendManager("", ArrayList<String>(), requireContext())
 
         val textView = view.findViewById<TextView>(R.id.friendName)
         textView.text = friendName
@@ -113,11 +120,18 @@ class FriendsDataFragment : Fragment() {
                 positionText.text = position.toString()
                 trackName.text = track.name
                 artistName.text = track.artists
-                albumName.text = track.album
 
-                trackImage.layoutParams.width = 8
-                trackImage.visibility = View.GONE
-                trackImage.setImageDrawable(null)
+                track.getImage(SpotifyImageSizes.MEDIUM)?.let { imageUrl ->
+                    Glide.with(itemView.context)
+                        .load(imageUrl)
+                        .apply(RequestOptions()
+                            .centerCrop()
+                            .placeholder(R.drawable.placeholder_album)
+                            .error(R.drawable.placeholder_album))
+                        .into(trackImage)
+                } ?: run {
+                    trackImage.setImageResource(R.drawable.placeholder_album)
+                }
             }
         }
     }

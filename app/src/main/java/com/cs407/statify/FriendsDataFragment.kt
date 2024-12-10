@@ -1,24 +1,17 @@
 package com.cs407.statify
 
-import android.app.ActionBar.LayoutParams
-import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.cardview.widget.CardView
-import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.firebase.firestore.ktx.firestore
@@ -26,8 +19,6 @@ import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import java.io.Serializable
 
 class FriendsDataFragment : Fragment() {
 
@@ -47,8 +38,10 @@ class FriendsDataFragment : Fragment() {
     private lateinit var friendName: String
     private lateinit var friendManager: FriendManager
     private lateinit var topTracks: ArrayList<TrackData>
+    private lateinit var topArtists: ArrayList<Artist>
     private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: FriendsTrackAdapter
+    private lateinit var trackAdapter: FriendsTrackAdapter
+    private lateinit var artistViewPager: ViewPager2
     private val db = Firebase.firestore
 
     override fun onCreateView(
@@ -65,11 +58,12 @@ class FriendsDataFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        adapter = FriendsTrackAdapter()
+        trackAdapter = FriendsTrackAdapter()
         recyclerView = view.findViewById<RecyclerView>(R.id.tracksRecyclerView).apply {
             layoutManager = LinearLayoutManager(context)
-            adapter = this@FriendsDataFragment.adapter
+            adapter = this@FriendsDataFragment.trackAdapter
         }
+        artistViewPager = view.findViewById(R.id.friendArtistCarousel)
         loadFriendData(view)
     }
 
@@ -87,10 +81,33 @@ class FriendsDataFragment : Fragment() {
         }
 
         CoroutineScope(Dispatchers.Main).launch {
-            topTracks = friendManager.getFriendData(friendName)
-            adapter.submitList(topTracks)
+            topTracks = friendManager.getFriendTrackData(friendName)
+            topArtists = friendManager.getFriendArtistData(friendName)
+            setupArtistCarousel(topArtists)
+            trackAdapter.submitList(topTracks)
         }
 
+    }
+
+    private fun setupArtistCarousel(topArtists: List<Artist>) {
+        val carouselAdapter = ArtistCarouselAdapter(
+            artists = topArtists,
+            context = requireContext()
+        )
+
+        artistViewPager.apply {
+            adapter = carouselAdapter
+            offscreenPageLimit = 3
+            setPageTransformer { page, position ->
+                val scaleFactor = 0.85f
+                val minScale = 0.8f
+                val absPosition = kotlin.math.abs(position)
+
+                page.scaleX = minScale + (1 - absPosition) * (scaleFactor - minScale)
+                page.scaleY = minScale + (1 - absPosition) * (scaleFactor - minScale)
+                page.alpha = 1 - absPosition
+            }
+        }
     }
 
     class FriendsTrackAdapter : RecyclerView.Adapter<FriendsTrackAdapter.TrackViewHolder>() {

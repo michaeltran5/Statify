@@ -124,10 +124,12 @@ class HomeFragment : Fragment() {
             val firebaseUser = auth.currentUser ?: throw Exception("No Firebase user")
             val spotifyAuth = "Bearer $accessToken"
 
+            // Get all required data
             val userData = spotifyApi.getUserProfile(spotifyAuth)
             val topTracks = spotifyApi.getTopTracks(spotifyAuth)
             val topArtists = spotifyApi.getTopArtists(spotifyAuth)
 
+            // Process genre data
             val genreCounts = mutableMapOf<String, Int>()
             topArtists.items.forEach { artist ->
                 artist.genres.forEach { genre ->
@@ -143,8 +145,65 @@ class HomeFragment : Fragment() {
                     "count" to count
                 )}
 
-            storeDataInFirebase(firebaseUser.uid, userData, topTracks, topArtists, topGenresList)
+            // Store data in Firebase with the updated format
+            val userDataMap = hashMapOf(
+                "userId" to firebaseUser.uid,
+                "spotifyId" to userData.id,
+                "displayName" to userData.displayName,
+                "email" to userData.email,
+                "topTracks" to topTracks.items.map { track ->
+                    hashMapOf(
+                        "id" to track.id,
+                        "name" to track.name,
+                        "artist" to track.artists.firstOrNull()?.name,
+                        "album" to hashMapOf(
+                            "id" to track.album.id,
+                            "name" to track.album.name,
+                            "images" to (track.album.images?.map { image ->
+                                mapOf(
+                                    "url" to image.url,
+                                    "height" to image.height,
+                                    "width" to image.width
+                                )
+                            } ?: emptyList<Map<String, Any>>())
+                        )
+                    )
+                },
+                "topArtists" to topArtists.items.take(10).map { artist ->
+                    hashMapOf(
+                        "id" to artist.id,
+                        "name" to artist.name,
+                        "genres" to artist.genres,
+                        "images" to (artist.images?.map { image ->
+                            mapOf(
+                                "url" to image.url,
+                                "height" to image.height,
+                                "width" to image.width
+                            )
+                        } ?: emptyList<Map<String, Any>>())
+                    )
+                },
+                "topGenres" to topGenresList,
+                "lastUpdated" to com.google.firebase.Timestamp.now(),
+                "username" to userData.displayName,
+                "friends" to listOf<String>(),
+                "profileUrl" to userData.profileImageUrl
+            )
 
+            // Store in Firestore
+            db.collection("users")
+                .document(firebaseUser.uid)
+                .set(userDataMap)
+                .addOnSuccessListener {
+                    Log.d(TAG, "Successfully stored user data in Firestore")
+                }
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Error storing data", e)
+                    Toast.makeText(requireContext(), "Error saving data: ${e.localizedMessage}",
+                        Toast.LENGTH_LONG).show()
+                }
+
+            // Update UI with the fetched data
             withContext(Dispatchers.Main) {
                 updateUI(userData, topTracks.items, topArtists.items, topGenresList)
                 calculateListeningTime(spotifyAuth)
@@ -176,7 +235,17 @@ class HomeFragment : Fragment() {
                     "id" to track.id,
                     "name" to track.name,
                     "artist" to track.artists.firstOrNull()?.name,
-                    "album" to track.album.name
+                    "album" to hashMapOf(
+                        "id" to track.album.id,
+                        "name" to track.album.name,
+                        "images" to (track.album.images?.map { image ->
+                            mapOf(
+                                "url" to image.url,
+                                "height" to image.height,
+                                "width" to image.width
+                            )
+                        } ?: emptyList<Map<String, Any>>())
+                    )
                 )
             },
             "topArtists" to topArtists.items.take(10).map { artist ->
@@ -203,6 +272,9 @@ class HomeFragment : Fragment() {
         db.collection("users")
             .document(firebaseUid)
             .set(userDataMap)
+            .addOnSuccessListener {
+                Log.d(TAG, "Successfully stored user data in Firestore")
+            }
             .addOnFailureListener { e ->
                 Log.e(TAG, "Error storing data", e)
                 Toast.makeText(requireContext(), "Error saving data: ${e.localizedMessage}",

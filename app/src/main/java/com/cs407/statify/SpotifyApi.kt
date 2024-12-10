@@ -73,7 +73,7 @@ data class Track(
     val name: String,
     val artists: List<Artist>,
     val album: Album,
-    val durationMs: Int
+    val durationMs: Int,
 ) {
     val imageUrl: String?
         get() = album.images?.getBestImageUrl()

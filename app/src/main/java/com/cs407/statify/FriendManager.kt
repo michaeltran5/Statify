@@ -84,8 +84,8 @@ class FriendManager(val username: String, val friendList: ArrayList<String>, @Tr
      * @param username name of user in database
      *
      */
-    suspend fun getFriendData(username: String) : ArrayList<String> {
-        val topTracks: ArrayList<String> = ArrayList()
+    suspend fun getFriendData(username: String) : ArrayList<FriendsDataFragment.TrackData> {
+        val topTracks: ArrayList<FriendsDataFragment.TrackData> = ArrayList()
         val result = db.collection("users")
             .whereEqualTo("username", username)
             .get()
@@ -97,12 +97,13 @@ class FriendManager(val username: String, val friendList: ArrayList<String>, @Tr
             val tracks = result.documents[0].get("topTracks") as? List<HashMap<String, Any>>
             if (tracks != null) {
                 for (track in tracks) {
-                    topTracks.add(track["name"].toString())
+                    val trackData = FriendsDataFragment.TrackData(track["name"].toString(), track["artist"].toString(), track["album"].toString())
+                    topTracks.add(trackData)
                 }
             }
 
         }
-        return topTracks
+        return topTracks.take(10) as ArrayList<FriendsDataFragment.TrackData>
     }
 
     /**

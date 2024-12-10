@@ -88,9 +88,17 @@ class MainActivity : AppCompatActivity() {
                     // Show navigation for other fragments
                     bottomButtonLayout.visibility = View.VISIBLE
                     supportActionBar?.show()
+                    updateSelectedButton(destination.id)
                 }
             }
         }
+    }
+
+    private fun updateSelectedButton(selectedId: Int) {
+        homeButton.isSelected = selectedId == R.id.homeFragment
+        topTracksButton.isSelected = selectedId == R.id.topTracksFragment
+        friendsButton.isSelected = selectedId == R.id.friendsFragment
+        profileButton.isSelected = selectedId == R.id.profileFragment
     }
 
     fun updateButtonsForLogout() {

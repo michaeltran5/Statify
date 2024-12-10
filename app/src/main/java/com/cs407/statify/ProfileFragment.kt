@@ -222,11 +222,9 @@ class ProfileFragment : Fragment() {
 
         val displayName = userData["displayName"] as? String ?: "Unknown"
         val email = userData["email"] as? String ?: "No email"
-        val friendCount = userData["friends"] as? String ?: "No Friends?"
 
         usernameText.text = displayName
         emailText.text = email
-        friendCountText.text = friendCount
     }
 
     private fun showLoading(show: Boolean) {

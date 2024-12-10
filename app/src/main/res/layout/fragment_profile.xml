@@ -21,6 +21,12 @@
             android:orientation="vertical"
             android:gravity="center_horizontal" >
 
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@mipmap/ic_launcher_foreground"
+                android:layout_gravity="center_horizontal" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -30,7 +36,8 @@
                 android:textSize="30sp"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold"
-                android:paddingBottom="16dp"/>
+                android:paddingBottom="16dp"
+                android:paddingTop="16dp" />
 
             <androidx.cardview.widget.CardView
                 android:layout_width="155dp"

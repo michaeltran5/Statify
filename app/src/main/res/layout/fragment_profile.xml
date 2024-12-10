@@ -114,6 +114,9 @@
         android:text="Logout"
         android:fontFamily="@font/metroplis"
         android:layout_marginBottom="56dp"
+        android:layout_marginHorizontal="85dp"
+        android:paddingVertical="4dp"
+        android:minHeight="0dp"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

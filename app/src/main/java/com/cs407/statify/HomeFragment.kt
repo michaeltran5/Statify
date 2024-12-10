@@ -196,7 +196,8 @@ class HomeFragment : Fragment() {
             "topGenres" to topGenresList,
             "lastUpdated" to com.google.firebase.Timestamp.now(),
             "username" to userData.displayName,
-            "friends" to listOf<String>()
+            "friends" to listOf<String>(),
+            "profileUrl" to userData.profileImageUrl
         )
 
         db.collection("users")

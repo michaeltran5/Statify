@@ -26,6 +26,10 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 private const val TAG = "ProfileFragment"
 
+/**
+ * Class that initializes/populates the Profile Page for Statify
+ *
+ */
 class ProfileFragment : Fragment() {
     private lateinit var usernameText: TextView
     private lateinit var friendCountText: TextView
@@ -55,6 +59,10 @@ class ProfileFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_profile, container, false)
     }
 
+    /**
+     * Initialize Views
+     *
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -70,12 +78,21 @@ class ProfileFragment : Fragment() {
         fetchRecentlyPlayedTracks()
     }
 
+    /**
+     * Logout Button Initialization/Event Handler
+     *
+     */
     private fun setupLogoutButton() {
         logoutButton.setOnClickListener {
             showLogoutConfirmation()
         }
     }
 
+
+    /**
+     * Alerts user that they have been successfully logged out
+     *
+     */
     private fun showLogoutConfirmation() {
         androidx.appcompat.app.AlertDialog.Builder(requireContext())
             .setTitle("Logout")
@@ -87,6 +104,10 @@ class ProfileFragment : Fragment() {
             .show()
     }
 
+    /**
+     * Logout function
+     *
+     */
     private fun logout() {
         coroutineScope.launch {
             try {
@@ -124,6 +145,10 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    /**
+     * Fetches the user's Spotify username/profile picture using Spotify API
+     *
+     */
     private fun fetchSpotifyProfile() {
         coroutineScope.launch {
             try {
@@ -149,6 +174,10 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    /**
+     * Fetches the user's 5 most recently played songs from Spotify API
+     *
+     */
     private fun fetchRecentlyPlayedTracks() {
         coroutineScope.launch {
             try {
@@ -174,6 +203,10 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    /**
+     * Sets the views to the data fetched from Firebase DB
+     *
+     */
     private fun loadUserProfile() {
         val currentUser = auth.currentUser
         if (currentUser != null) {
@@ -213,6 +246,10 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    /**
+     * Displays full user profile based on all the previously fetched data
+     *
+     */
     private fun displayUserProfile(userData: Map<String, Any>?) {
         if (userData == null) {
             usernameText.text = "Unknown User"

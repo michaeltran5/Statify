@@ -5,27 +5,31 @@ import retrofit2.http.Header
 import retrofit2.http.Query
 import kotlin.math.abs
 
+/**
+ * Interface for fetching all data needed from Spotify API
+ *
+ */
 interface SpotifyApi {
-    @GET("v1/me")
+    @GET("v1/me") //Gets User Profile
     suspend fun getUserProfile(
         @Header("Authorization") auth: String
     ): UserData
 
-    @GET("v1/me/top/tracks")
+    @GET("v1/me/top/tracks") //Gets Top Tracks
     suspend fun getTopTracks(
         @Header("Authorization") auth: String,
         @Query("limit") limit: Int = 20,
         @Query("time_range") timeRange: String = "medium_term"
     ): TopTracksResponse
 
-    @GET("v1/me/top/artists")
+    @GET("v1/me/top/artists") //Gets Top Artists
     suspend fun getTopArtists(
         @Header("Authorization") auth: String,
-        @Query("limit") limit: Int = 50,
+        @Query("limit") limit: Int = 20,
         @Query("time_range") timeRange: String = "medium_term"
     ): TopArtistsResponse
 
-    @GET("v1/me/player/recently-played")
+    @GET("v1/me/player/recently-played") //Gets recently played
     suspend fun getRecentlyPlayed(
         @Header("Authorization") auth: String,
         @Query("limit") limit: Int = 50,
@@ -33,8 +37,8 @@ interface SpotifyApi {
     ): RecentlyPlayedResponse
 }
 
-// Image size constants
-object SpotifyImageSizes {
+object SpotifyImageSizes { // Image size constants
+
     const val SMALL = 64
     const val MEDIUM = 300
     const val LARGE = 640
@@ -48,6 +52,10 @@ fun List<SpotifyImage>?.getBestImageUrl(preferredSize: Int = SpotifyImageSizes.M
     }?.url ?: firstOrNull()?.url
 }
 
+/**
+ * User Data class - stores all information tied to a Spotify User's account
+ *
+ */
 data class UserData(
     val id: String,
     val display_name: String?,
@@ -94,6 +102,10 @@ data class TopArtistsResponse(
     val items: List<Artist>
 )
 
+/**
+ * Artist data class - stores all data related to a Spotify Artist
+ *
+ */
 data class Artist(
     val id: String,
     val name: String,
@@ -107,6 +119,10 @@ data class Artist(
         images?.getBestImageUrl(size)
 }
 
+/**
+ * Album data class - stores all data related to an Album
+ *
+ */
 data class Album(
     val id: String,
     val name: String,

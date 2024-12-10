@@ -8,6 +8,10 @@ import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
 
+/**
+ * SpotifyAuth object - handles all authentication needed to make calls to Spotify API
+ *
+ */
 object SpotifyAuth {
     private const val TAG = "SpotifyAuth"
     const val REQUEST_CODE = 1337
@@ -59,7 +63,8 @@ object SpotifyAuth {
             .appendQueryParameter("client_id", CLIENT_ID)
             .appendQueryParameter("response_type", "token")
             .appendQueryParameter("redirect_uri", REDIRECT_URI)
-            .appendQueryParameter("scope", "user-read-private user-read-email user-top-read user-read-recently-played")
+            .appendQueryParameter("scope", "user-read-private user-read-email user-top-read " +
+                    "user-read-recently-played")
             .appendQueryParameter("show_dialog", "true")
             .appendQueryParameter("auth_type", "webview")  // Try to force WebView
             .appendQueryParameter("utm_source", "spotify-sdk")

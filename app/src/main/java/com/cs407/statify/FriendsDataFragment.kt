@@ -21,9 +21,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.io.Serializable
 
 class FriendsDataFragment : Fragment() {
@@ -46,6 +49,7 @@ class FriendsDataFragment : Fragment() {
     private lateinit var topTracks: ArrayList<TrackData>
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: FriendsTrackAdapter
+    private val db = Firebase.firestore
 
     override fun onCreateView(
         inflater: LayoutInflater,

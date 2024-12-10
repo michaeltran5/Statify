@@ -26,6 +26,12 @@ import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import android.content.res.ColorStateList
+import android.widget.ImageView
+import android.widget.ScrollView
+import com.bumptech.glide.Glide
+import com.google.firebase.firestore.ktx.firestore
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class FriendsFragment : Fragment() {
 
@@ -34,6 +40,7 @@ class FriendsFragment : Fragment() {
     private lateinit var userData: UserData
     private val auth = Firebase.auth
     private lateinit var context: Context
+    private val db = Firebase.firestore
 
     private val spotifyApi = Retrofit.Builder()
         .baseUrl("https://api.spotify.com/")
@@ -104,7 +111,6 @@ class FriendsFragment : Fragment() {
             val friend = friendManager.searchForFriend(text)
             if (friend != "") {
                 clearCards()
-                val cardContainer = view.findViewById<LinearLayout>(R.id.cardContainer)
                 addCardView(cardContainer, friend, false)
             }
             inputField.text.clear()
@@ -117,8 +123,19 @@ class FriendsFragment : Fragment() {
      * @param friendName name of user whose profile picture to get
      *
      */
-    private fun getImage(friendName: String) {
-        TODO()
+    private suspend fun getImage(friendName: String): String? {
+        return withContext(Dispatchers.IO) {
+            val result = db.collection("users")
+                .whereEqualTo("username", friendName)
+                .get()
+                .await()
+
+            if (result.documents.isNotEmpty()) {
+                return@withContext result.documents[0].getString("profileUrl")
+            } else {
+                return@withContext ""
+            }
+        }
     }
 
     /**
@@ -162,47 +179,33 @@ class FriendsFragment : Fragment() {
      */
     private fun addCardView(parent: LinearLayout, friend: String, remove: Boolean) {
 
+        val view = LayoutInflater.from(requireContext()).inflate(R.layout.friend_card, parent, false)
+
+        val existingParent = view.parent
+        if (existingParent != null) {
+            (existingParent as ViewGroup).removeView(view)  // Remove the view from its previous parent
+        }
+
         val action: String
         val color: Int
-        val cardView = CardView(requireContext())
 
-        val layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        )
+        val imageView = view.findViewById<ImageView>(R.id.friendImage)
+        CoroutineScope(Dispatchers.Main).launch {
+            val imageUrl = getImage(friend)
+            imageView.cropToPadding
+            userData.profileImageUrl?.let { _ ->
+                Glide.with(requireContext())
+                    .load(imageUrl)
+                    .override(250, 250)
+                    .circleCrop()
+                    .into(imageView)
+            }
+        }
 
-        layoutParams.setMargins(0, 10, 0, 10)
-        cardView.layoutParams = layoutParams
+        val friendText = view.findViewById<TextView>(R.id.friendName)
+        friendText.text = friend
 
-        cardView.cardElevation = 8f
-        cardView.setCardBackgroundColor(Color.TRANSPARENT)
-        cardView.setBackgroundResource(R.drawable.friend_card_background)
-        cardView.radius = 12f
-
-        val cardLayoutVertical = LinearLayout(requireContext())
-        cardLayoutVertical.orientation = LinearLayout.VERTICAL
-        val vertParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.MATCH_PARENT,
-        )
-        cardLayoutVertical.gravity = Gravity.CENTER
-        cardLayoutVertical.layoutParams = vertParams
-
-
-        //val imageView = ImageView(requireContext())
-
-        val textView = TextView(context)
-        textView.width = LayoutParams.MATCH_PARENT
-        textView.text = friend
-        textView.textSize = 30f
-        textView.setPadding(10, 10, 10, 5)
-        textView.gravity = Gravity.CENTER
-        val textColor = context.getColor(R.color.white) ?: Color.CYAN
-        textView.setTextColor(textColor)
-        textView.typeface = ResourcesCompat.getFont(context, R.font.metroplis)
-
-
-        val buttonView = Button(context)
+        val buttonView = view.findViewById<Button>(R.id.friendActionButton)
         if (remove){
             action = "Remove Friend"
             color = Color.RED
@@ -225,24 +228,14 @@ class FriendsFragment : Fragment() {
             }
         }
         buttonView.text = action
-        buttonView.setBackgroundColor(Color.TRANSPARENT)
         buttonView.setTextColor(color)
-        buttonView.gravity = Gravity.CENTER
-        buttonView.layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        )
 
-        cardView.addView(cardLayoutVertical)
-        cardLayoutVertical.addView(textView)
-        cardLayoutVertical.addView(buttonView)
-        //cardView.addView(imageView)
-        cardView.setOnClickListener {
+        view.setOnClickListener {
             Log.d("CARD CLICKED!", friend)
             openFriendDataPage(friend)
         }
 
-        parent.addView(cardView)
+        parent.addView(view)
     }
 
 }

@@ -77,7 +77,7 @@ class FriendManager(
      * @param username name of user in database
      * @return ArrayList of TrackData objects
      */
-    suspend fun getFriendData(username: String): ArrayList<FriendsDataFragment.TrackData> {
+    suspend fun getFriendTrackData(username: String): ArrayList<FriendsDataFragment.TrackData> {
         Log.d("FriendManager", "Getting data for username: $username")
         val topTracks: ArrayList<FriendsDataFragment.TrackData> = ArrayList()
 
@@ -173,6 +173,65 @@ class FriendManager(
 
         Log.d("FriendManager", "Returning ${topTracks.size} tracks")
         return topTracks.take(10) as ArrayList<FriendsDataFragment.TrackData>
+    }
+
+    suspend fun getFriendArtistData(username: String): ArrayList<Artist> {
+        Log.d("FriendManager", "Getting artist data for username: $username")
+        val topArtists: ArrayList<Artist> = ArrayList()
+
+        try {
+            val result = db.collection("users")
+                .whereEqualTo("username", username)
+                .get()
+                .await()
+
+            if (result.isEmpty) {
+                Log.d("FriendManager", "No user found with username: $username")
+                return topArtists
+            }
+
+            val artists = result.documents[0].get("topArtists") as? List<Map<String, Any>>
+            Log.d("FriendManager", "Raw artists data: $artists")
+
+            artists?.forEach { artist ->
+                try {
+                    val imagesData = (artist["images"] as? List<Map<String, Any>>)?.map { imageData ->
+                        SpotifyImage(
+                            url = imageData["url"] as? String ?: "",
+                            height = (imageData["height"] as? Number)?.toInt(),
+                            width = (imageData["width"] as? Number)?.toInt()
+                        )
+                    }
+
+                    val artistData = Artist(
+                        id = artist["id"] as? String ?: "",
+                        name = artist["name"] as? String ?: "",
+                        genres = (artist["genres"] as? List<String>) ?: emptyList(),
+                        images = imagesData
+                    )
+
+                    Log.d("FriendManager", """
+                Created artist:
+                Name: ${artistData.name}
+                ID: ${artistData.id}
+                Genres: ${artistData.genres}
+                Has images: ${artistData.images?.isNotEmpty()}
+            """.trimIndent())
+
+                    topArtists.add(artistData)
+
+                } catch (e: Exception) {
+                    Log.e("FriendManager", "Error parsing artist: ${e.message}")
+                    e.printStackTrace()
+                }
+            }
+
+        } catch (e: Exception) {
+            Log.e("FriendManager", "Error getting friend artist data: ${e.message}")
+            e.printStackTrace()
+        }
+
+        return topArtists.take(10) as ArrayList<Artist>
     }
 
     /**

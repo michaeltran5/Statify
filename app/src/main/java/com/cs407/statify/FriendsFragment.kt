@@ -196,6 +196,8 @@ class FriendsFragment : Fragment() {
             userData.profileImageUrl?.let { _ ->
                 Glide.with(requireContext())
                     .load(imageUrl)
+                    .placeholder(R.drawable.profile_placeholder) // Add this line
+                    .error(R.drawable.profile_placeholder)      // Optional: Add this for error cases
                     .override(250, 250)
                     .circleCrop()
                     .into(imageView)

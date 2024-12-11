@@ -16,7 +16,7 @@
     <string name="listening_time">Listening Time</string>
     <string name="top_artists_header">Your Top Artists</string>
     <string name="top_tracks_header">Your Top Tracks</string>
-    <string name="top_genres_header">Your Top Genre</string>
+    <string name="top_genres_header">Your Top Genres</string>
     <string name="top_artists">Top Artists</string>
     <string name="top_tracks">Top Tracks</string>
 </resources>

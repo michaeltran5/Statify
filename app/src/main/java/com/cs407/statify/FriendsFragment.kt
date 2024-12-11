@@ -178,7 +178,7 @@ class FriendsFragment : Fragment() {
 
         val existingParent = view.parent
         if (existingParent != null) {
-            (existingParent as ViewGroup).removeView(view)  // Remove the view from its previous parent
+            (existingParent as ViewGroup).removeView(view)
         }
 
         val action: String
@@ -191,8 +191,8 @@ class FriendsFragment : Fragment() {
             userData.profileImageUrl?.let { _ ->
                 Glide.with(requireContext())
                     .load(imageUrl)
-                    .placeholder(R.drawable.profile_placeholder) // Add this line
-                    .error(R.drawable.profile_placeholder)      // Optional: Add this for error cases
+                    .placeholder(R.drawable.profile_placeholder)
+                    .error(R.drawable.profile_placeholder)
                     .override(250, 250)
                     .circleCrop()
                     .into(imageView)
@@ -228,7 +228,6 @@ class FriendsFragment : Fragment() {
         buttonView.setTextColor(color)
 
         view.setOnClickListener {
-            Log.d("CARD CLICKED!", friend)
             openFriendDataPage(friend)
         }
 

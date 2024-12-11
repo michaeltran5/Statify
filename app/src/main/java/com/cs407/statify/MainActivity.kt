@@ -112,10 +112,8 @@ class MainActivity : AppCompatActivity() {
         // Clear Spotify token and any cached data
         getSharedPreferences("SPOTIFY", 0).edit().clear().apply()
 
-        // Ensure webView is hidden
         webView.visibility = View.GONE
 
-        // Navigate to home
         navController.navigate(R.id.homeFragment)
     }
 

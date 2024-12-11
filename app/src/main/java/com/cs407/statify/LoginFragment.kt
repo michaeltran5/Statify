@@ -72,7 +72,6 @@ class LoginFragment : Fragment() {
         val client = SpotifyWebViewClient { token ->
             accessToken = token
             webView.visibility = View.GONE
-            Log.d(TAG, "Spotify Auth successful")
 
             requireActivity().getSharedPreferences("SPOTIFY", 0)
                 .edit()

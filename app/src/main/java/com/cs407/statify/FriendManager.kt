@@ -31,7 +31,6 @@ class FriendManager(
             Toast.makeText(context,"Could not find user with username $userToSearch", Toast.LENGTH_SHORT).show()
         } else {
             searchResult = result.documents[0].get("username") as String
-            Log.d("Found Friend", searchResult)
         }
         return searchResult
     }
@@ -75,6 +74,7 @@ class FriendManager(
     /**
      * Queries Firestore DB for a specific user's top tracks
      * @param username name of user in database
+     *
      * @return ArrayList of TrackData objects
      */
     suspend fun getFriendTrackData(username: String): ArrayList<FriendsDataFragment.TrackData> {
@@ -134,8 +134,6 @@ class FriendManager(
                         )
                     }
 
-                    Log.d("FriendManager", "Parsed images: $images")
-
                     val album = Album(
                         id = albumData["id"] as? String ?: "",
                         name = albumData["name"] as? String ?: "",
@@ -161,20 +159,23 @@ class FriendManager(
                     topTracks.add(trackData)
 
                 } catch (e: Exception) {
-                    Log.e("FriendManager", "Error parsing track: ${e.message}")
                     e.printStackTrace()
                 }
             }
 
         } catch (e: Exception) {
-            Log.e("FriendManager", "Error getting friend data: ${e.message}")
             e.printStackTrace()
         }
 
-        Log.d("FriendManager", "Returning ${topTracks.size} tracks")
         return topTracks.take(10) as ArrayList<FriendsDataFragment.TrackData>
     }
 
+    /**
+     * Queries Firestore DB for a specific user's top artists
+     * @param username name of user in database
+     *
+     * @return ArrayList of Artist objects
+     */
     suspend fun getFriendArtistData(username: String): ArrayList<Artist> {
         Log.d("FriendManager", "Getting artist data for username: $username")
         val topArtists: ArrayList<Artist> = ArrayList()
@@ -186,12 +187,10 @@ class FriendManager(
                 .await()
 
             if (result.isEmpty) {
-                Log.d("FriendManager", "No user found with username: $username")
                 return topArtists
             }
 
             val artists = result.documents[0].get("topArtists") as? List<Map<String, Any>>
-            Log.d("FriendManager", "Raw artists data: $artists")
 
             artists?.forEach { artist ->
                 try {
@@ -221,13 +220,11 @@ class FriendManager(
                     topArtists.add(artistData)
 
                 } catch (e: Exception) {
-                    Log.e("FriendManager", "Error parsing artist: ${e.message}")
                     e.printStackTrace()
                 }
             }
 
         } catch (e: Exception) {
-            Log.e("FriendManager", "Error getting friend artist data: ${e.message}")
             e.printStackTrace()
         }
 

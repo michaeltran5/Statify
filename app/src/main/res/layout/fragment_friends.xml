@@ -57,7 +57,7 @@
                 android:background="@color/white"
                 android:hint="Search for new friends"
                 android:padding="10dp"
-                android:gravity="start"/>
+                android:gravity="start" />
         </LinearLayout>
         <ScrollView
             android:id="@+id/friendScrollView"

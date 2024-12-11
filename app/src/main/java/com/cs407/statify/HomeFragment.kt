@@ -106,8 +106,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun checkAuthState() {
-        auth.currentUser?.let { user ->
-            Log.d(TAG, "Current Firebase user: ${user.uid}")
+        auth.currentUser?.let { _ ->
             accessToken = requireActivity().getSharedPreferences("SPOTIFY", 0)
                 .getString("access_token", null)
 
@@ -272,11 +271,7 @@ class HomeFragment : Fragment() {
         db.collection("users")
             .document(firebaseUid)
             .set(userDataMap)
-            .addOnSuccessListener {
-                Log.d(TAG, "Successfully stored user data in Firestore")
-            }
             .addOnFailureListener { e ->
-                Log.e(TAG, "Error storing data", e)
                 Toast.makeText(requireContext(), "Error saving data: ${e.localizedMessage}",
                     Toast.LENGTH_LONG).show()
             }
@@ -295,7 +290,7 @@ class HomeFragment : Fragment() {
             val hours = totalMinutes / 60
             val minutes = totalMinutes % 60
         } catch (e: Exception) {
-            Log.e(TAG, "Error calculating listening time", e)
+            e.message
         }
     }
 

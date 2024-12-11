@@ -134,7 +134,6 @@ class ProfileFragment : Fragment() {
                 findNavController().navigate(R.id.loginFragment)
 
             } catch (e: Exception) {
-                Log.e(TAG, "Error during logout", e)
                 showLoading(false)
                 Toast.makeText(
                     requireContext(),
@@ -169,7 +168,7 @@ class ProfileFragment : Fragment() {
                     }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error fetching Spotify profile", e)
+                e.printStackTrace()
             }
         }
     }
@@ -198,7 +197,7 @@ class ProfileFragment : Fragment() {
                     }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error fetching recently played tracks", e)
+                e.printStackTrace()
             }
         }
     }
@@ -223,7 +222,6 @@ class ProfileFragment : Fragment() {
                         val userData = document.data
                         displayUserProfile(userData)
                     } else {
-                        Log.d(TAG, "No user data found")
                         usernameText.text = "No profile data available"
                         emailText.text = ""
                     }

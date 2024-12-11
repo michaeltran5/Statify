@@ -61,7 +61,6 @@ class TopTracksFragment : Fragment() {
                 val auth = "Bearer $accessToken"
                 Log.d("TopTracksFragment", "Fetching tracks with token: $accessToken")
 
-                // Set limit to 10 in the API call
                 val topTracks = spotifyApi.getTopTracks(auth, limit = 50)
                 Log.d("TopTracksFragment", "Retrieved ${topTracks.items.size} tracks")
 
@@ -69,7 +68,8 @@ class TopTracksFragment : Fragment() {
 
             } catch (e: Exception) {
                 Log.e("TopTracksFragment", "Error fetching top tracks", e)
-                Toast.makeText(requireContext(), "Error fetching top tracks", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Error fetching top tracks",
+                    Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -79,7 +79,7 @@ class TopTracksAdapter : RecyclerView.Adapter<TopTracksAdapter.TrackViewHolder>(
     private var tracks: List<Track> = emptyList()
 
     fun submitList(newTracks: List<Track>) {
-        tracks = newTracks.take(50) // Ensure we only take top 50 even if more are returned
+        tracks = newTracks.take(50)
         notifyDataSetChanged()
     }
 
@@ -108,7 +108,6 @@ class TopTracksAdapter : RecyclerView.Adapter<TopTracksAdapter.TrackViewHolder>(
             artistName.text = track.artists.joinToString(", ") { it.name }
             albumName.text = track.album.name
 
-            // Load image using Glide
             track.getImage(SpotifyImageSizes.MEDIUM)?.let { imageUrl ->
                 Glide.with(itemView.context)
                     .load(imageUrl)
@@ -118,7 +117,6 @@ class TopTracksAdapter : RecyclerView.Adapter<TopTracksAdapter.TrackViewHolder>(
                         .error(R.drawable.placeholder_album))
                     .into(trackImage)
             } ?: run {
-                // If no image URL is available, load placeholder
                 trackImage.setImageResource(R.drawable.placeholder_album)
             }
         }

@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import android.widget.VideoView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.cs407.statify.R
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
